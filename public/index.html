@@ -18,6 +18,29 @@
         </p>
       </section>
 
+      <section class="panel admin-database admin-only" id="admin-database" hidden>
+        <div class="admin-database-header">
+          <div>
+            <p class="eyebrow">Database Editor</p>
+            <h2>Calculator values</h2>
+          </div>
+          <div class="admin-database-actions">
+            <button class="secondary-action" id="config-reset" type="button">Reset defaults</button>
+            <button class="primary-action" id="config-save" type="button">Save values</button>
+          </div>
+        </div>
+        <p class="admin-database-help">
+          Edit pricing, portions, taxes, fees, deposits, minimums, package values, and quote submission settings here.
+        </p>
+        <textarea
+          class="config-editor"
+          id="config-editor"
+          spellcheck="false"
+          aria-label="Calculator backend database JSON"
+        ></textarea>
+        <p class="form-error" id="config-status" role="status"></p>
+      </section>
+
       <section class="workspace" aria-label="Catering calculator">
         <form class="panel form-panel" id="quote-form">
           <fieldset>
@@ -63,7 +86,7 @@
 
             <label class="field">
               <span>Event date</span>
-              <input id="event-date" name="eventDate" type="date" required />
+              <input id="event-date" name="eventDate" type="date" />
             </label>
 
             <label class="field">
@@ -104,7 +127,7 @@
             </fieldset>
 
             <fieldset>
-              <legend>Smoked meats</legend>
+              <legend>Meats by the Pound</legend>
               <div class="item-list" id="a-la-carte-meats"></div>
             </fieldset>
 
@@ -160,12 +183,21 @@
             <section class="guest-summary" id="guest-summary">
               <p id="guest-summary-copy"></p>
               <div class="deposit-box">
-                <span>25% deposit to reserve</span>
+                <span>Deposit to reserve</span>
                 <strong id="deposit-total"></strong>
               </div>
+              <section class="draft-invoice" id="draft-invoice">
+                <div>
+                  <p class="eyebrow">Draft Invoice</p>
+                  <h3>Selected items</h3>
+                </div>
+                <dl class="invoice-lines" id="invoice-items"></dl>
+                <dl class="invoice-lines invoice-summary" id="invoice-summary"></dl>
+              </section>
               <button class="primary-action request-action" id="request-action" type="button">
                 Ready to move forward
               </button>
+              <p class="request-status" id="request-status" role="status"></p>
             </section>
 
             <section class="admin-only" id="admin-breakdown" hidden>
@@ -212,7 +244,7 @@
         </label>
         <div class="dialog-actions">
           <button class="secondary-action" id="request-cancel" type="button">Cancel</button>
-          <button class="primary-action" type="submit">Create email request</button>
+          <button class="primary-action" type="submit">Submit quote request</button>
         </div>
       </form>
     </dialog>

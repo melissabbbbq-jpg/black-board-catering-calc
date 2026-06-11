@@ -35,11 +35,22 @@ node --test
 
 ## Guest Request Flow
 
-Guests enter contact details, event type, event date, guest count, package or menu selections, service choice, and quantities before calculating a quote. Pickup/delivery quantities auto-populate from backend recommendations and remain editable by guests. They can click `Ready to move forward` after calculating a quote. The MVP opens an email draft to `melissa@blackboardbarbq.com` with contact details, event details, selected package/items, quantities, service add-on, total quote, and 25% deposit amount.
+Guests enter contact details, event type, optional event date, guest count, package or menu selections, service choice, and quantities before calculating a quote. Pickup/delivery quantities auto-populate from backend recommendations and remain editable by guests. They can click `Ready to move forward` after calculating a quote, submit the request in-app, and see: `Your quote has been submitted. We will be in touch soon!`
+
+Quote requests are sent by the backend through SMTP. Configure these environment variables in production:
+
+- `SMTP_HOST`
+- `SMTP_PORT`
+- `SMTP_USER`
+- `SMTP_PASS`
+- `SMTP_FROM`
+- `QUOTE_RECIPIENT_EMAIL`
+
+For local testing without sending real email, set `EMAIL_DELIVERY_MODE=capture`; submissions are written to `data/quote-submissions.json`.
 
 ## Backend Price Management
 
-Menu, pricing, and recommendation data is managed in `src/calculator.js` inside the exported `CONFIG` object. Update item `label`, category array, `unit` / `unitLabel`, `pricePerUnit` or `priceByContainer`, `yieldNote`, portion assumptions such as `ouncesPerGuest`, `portionsPerGuest`, `servingsPerGuest`, `servingsPerUnit`, and `active` there; the guest form reads those values from `/api/config`, so frontend form code does not need price edits.
+Menu, pricing, fees, taxes, deposits, minimums, package rules, quote recipient settings, and recommendation data are managed in the admin database editor at `/admin`. The saved runtime file is `data/calculator-config.json`; defaults live in `data/calculator-config.default.json`. The guest form reads those values from `/api/config`, so frontend form code does not need price edits.
 
 For spreadsheet uploads or bulk menu updates, use one row per menu item with these columns: `Menu Item`, `Category`, `Price`, `Unit`, `Portion Size`, `Guest Count Assumptions`, `Yield`, `Order Increments`, `Formula Notes`, and `Relevant Notes`.
 
@@ -83,3 +94,4 @@ For spreadsheet uploads or bulk menu updates, use one row per menu item with the
 - Sides use each item's ounces-per-guest rule.
 - Desserts use each item's portions-per-guest rule and the backend default dessert size.
 - Beverages use 16 servings per gallon.
+- Auto-populated quantity values display in `.00` or `.50` increments.

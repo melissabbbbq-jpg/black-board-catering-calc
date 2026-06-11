@@ -1,7 +1,13 @@
 const fs = require("node:fs");
 const http = require("node:http");
 const path = require("node:path");
-const { CONFIG, calculateQuote } = require("./calculator");
+const {
+  calculateQuote,
+  getCurrentConfig,
+  resetCalculatorConfig,
+  saveCalculatorConfig
+} = require("./calculator");
+const { sendQuoteRequest } = require("./quote-mailer");
 
 const PORT = Number(process.env.PORT || 3000);
 const HOST = process.env.HOST || "0.0.0.0";
@@ -45,7 +51,33 @@ function readRequestBody(request) {
 
 async function handleApi(request, response, pathname) {
   if (request.method === "GET" && pathname === "/api/config") {
-    sendJson(response, 200, CONFIG);
+    sendJson(response, 200, getCurrentConfig());
+    return true;
+  }
+
+  if (request.method === "PUT" && pathname === "/api/config") {
+    try {
+      const rawBody = await readRequestBody(request);
+      const payload = rawBody ? JSON.parse(rawBody) : {};
+      sendJson(response, 200, saveCalculatorConfig(payload));
+    } catch (error) {
+      sendJson(response, 400, {
+        error: error.message || "Unable to save config."
+      });
+    }
+
+    return true;
+  }
+
+  if (request.method === "POST" && pathname === "/api/config/reset") {
+    try {
+      sendJson(response, 200, resetCalculatorConfig());
+    } catch (error) {
+      sendJson(response, 400, {
+        error: error.message || "Unable to reset config."
+      });
+    }
+
     return true;
   }
 
@@ -57,6 +89,31 @@ async function handleApi(request, response, pathname) {
     } catch (error) {
       sendJson(response, 400, {
         error: error.message || "Unable to calculate quote."
+      });
+    }
+
+    return true;
+  }
+
+  if (request.method === "POST" && pathname === "/api/quote-request") {
+    try {
+      const rawBody = await readRequestBody(request);
+      const payload = rawBody ? JSON.parse(rawBody) : {};
+      const quoteData = calculateQuote(payload.quotePayload || {});
+      const result = await sendQuoteRequest({
+        config: getCurrentConfig(),
+        quoteData,
+        contact: payload.contact || {},
+        notes: String(payload.notes || "").trim()
+      });
+
+      sendJson(response, 200, {
+        message: "Your quote has been submitted. We will be in touch soon!",
+        delivery: result.mode
+      });
+    } catch (error) {
+      sendJson(response, 400, {
+        error: error.message || "Unable to submit quote request."
       });
     }
 

@@ -1,6 +1,12 @@
 const assert = require("node:assert/strict");
 const test = require("node:test");
-const { CONFIG, calculateQuote, getMeatOuncesPerGuest } = require("../src/calculator");
+const {
+  CONFIG,
+  calculateQuote,
+  getMeatOuncesPerGuest,
+  reloadCalculatorConfig,
+  saveCalculatorConfig
+} = require("../src/calculator");
 
 test("calculates a full-service buffet package quote", () => {
   const result = calculateQuote({
@@ -24,7 +30,7 @@ test("calculates a full-service buffet package quote", () => {
   assert.equal(result.prep.plannedGuests, 115);
   assert.equal(result.prep.meats.length, 2);
   assert.equal(result.prep.sides.length, 2);
-  assert.equal(result.prep.meats[0].cookedPounds, 35.9);
+  assert.equal(result.prep.meats[0].cookedPounds, 36);
   assert.equal(result.prep.sides[0].quarts, 15);
 });
 
@@ -86,11 +92,11 @@ test("calculates pickup and delivery a la carte quantities and quote from unit p
   });
 
   assert.equal(result.mode, "a-la-carte");
-  assert.equal(result.quote.menuSubtotal, 1206);
-  assert.equal(result.quote.productionFee, 361.8);
-  assert.equal(result.quote.salesTax, 129.34);
-  assert.equal(result.quote.totalQuote, 1697.14);
-  assert.equal(result.quote.deposit, 424.29);
+  assert.equal(result.quote.menuSubtotal, 1188);
+  assert.equal(result.quote.productionFee, 356.4);
+  assert.equal(result.quote.salesTax, 127.41);
+  assert.equal(result.quote.totalQuote, 1671.81);
+  assert.equal(result.quote.deposit, 417.95);
   assert.equal(result.quote.pricingIncomplete, false);
 
   assert.deepEqual(
@@ -103,9 +109,9 @@ test("calculates pickup and delivery a la carte quantities and quote from unit p
     [
       {
         label: "Smoked Prime Brisket",
-        orderQuantity: 16,
-        cookedPounds: 16,
-        rawPounds: 32
+        orderQuantity: 15.5,
+        cookedPounds: 15.5,
+        rawPounds: 31
       },
       {
         label: "Whole Smoked Chicken",
@@ -138,8 +144,8 @@ test("uses backend prices for a la carte quotes", () => {
 
   assert.equal(result.quote.pricingIncomplete, false);
   assert.equal(result.quote.usesSamplePricing, false);
-  assert.equal(result.quote.menuSubtotal, 366);
-  assert.equal(result.quote.minimumAdjustment, 134);
+  assert.equal(result.quote.menuSubtotal, 355);
+  assert.equal(result.quote.minimumAdjustment, 145);
 });
 
 test("uses updated sides by the quart menu configuration", () => {
@@ -217,4 +223,64 @@ test("requires a valid minimum a la carte menu", () => {
       }),
     /Select at least one smoked meat/
   );
+});
+
+test("builds a clean draft invoice without backend formulas", () => {
+  const result = calculateQuote({
+    calculatorType: "a-la-carte",
+    eventDate: "2026-07-04",
+    guestCount: 50,
+    fulfillment: "dropoff",
+    meats: ["smoked-prime-brisket", "whole-smoked-chicken"],
+    sides: ["mac-n-cheese"],
+    desserts: [],
+    beverages: []
+  });
+
+  assert.deepEqual(result.quote.invoice.items.slice(0, 2), [
+    {
+      label: "Smoked Prime Brisket",
+      total: 558
+    },
+    {
+      label: "Whole Smoked Chicken",
+      total: 126
+    }
+  ]);
+  assert.deepEqual(Object.keys(result.quote.invoice.summary), [
+    "subtotal",
+    "taxes",
+    "fees",
+    "depositAmount",
+    "estimatedTotal"
+  ]);
+});
+
+test("uses admin-saved config values in calculator logic", () => {
+  const originalConfig = reloadCalculatorConfig();
+  const editedConfig = JSON.parse(JSON.stringify(originalConfig));
+  editedConfig.taxRate = 0.1;
+  editedConfig.depositRate = 0.5;
+  editedConfig.aLaCarte.meatPortionOuncesBySelection["1"] = 6;
+
+  try {
+    saveCalculatorConfig(editedConfig);
+    const result = calculateQuote({
+      calculatorType: "a-la-carte",
+      eventDate: "2026-07-06",
+      guestCount: 16,
+      fulfillment: "pickup",
+      meats: ["pulled-pork"],
+      sides: ["charro-beans"],
+      desserts: [],
+      beverages: []
+    });
+
+    assert.equal(getMeatOuncesPerGuest(1), 6);
+    assert.equal(result.prep.meats[0].orderQuantity, 6);
+    assert.equal(result.quote.taxRate, 0.1);
+    assert.equal(result.quote.depositRate, 0.5);
+  } finally {
+    saveCalculatorConfig(originalConfig);
+  }
 });

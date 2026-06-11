@@ -1,6 +1,10 @@
 const form = document.querySelector("#quote-form");
 const isAdminView = window.location.pathname === "/admin";
-const requestRecipient = "melissa@blackboardbarbq.com";
+const adminDatabaseEl = document.querySelector("#admin-database");
+const configEditorEl = document.querySelector("#config-editor");
+const configSaveEl = document.querySelector("#config-save");
+const configResetEl = document.querySelector("#config-reset");
+const configStatusEl = document.querySelector("#config-status");
 const errorEl = document.querySelector("#form-error");
 const resultsEl = document.querySelector("#results");
 const emptyStateEl = document.querySelector("#empty-state");
@@ -11,7 +15,11 @@ const quoteLinesEl = document.querySelector("#quote-lines");
 const depositTotalEl = document.querySelector("#deposit-total");
 const guestSummaryEl = document.querySelector("#guest-summary");
 const guestSummaryCopyEl = document.querySelector("#guest-summary-copy");
+const invoiceItemsEl = document.querySelector("#invoice-items");
+const invoiceSummaryEl = document.querySelector("#invoice-summary");
 const requestActionEl = document.querySelector("#request-action");
+const requestStatusEl = document.querySelector("#request-status");
+const depositLabelEl = document.querySelector(".deposit-box span");
 const requestDialogEl = document.querySelector("#request-dialog");
 const requestFormEl = document.querySelector("#request-form");
 const requestCancelEl = document.querySelector("#request-cancel");
@@ -28,6 +36,7 @@ const packageSelectionsEl = document.querySelector("#package-selections");
 
 let calculatorConfig;
 let latestQuoteData;
+let latestQuotePayload;
 
 const money = new Intl.NumberFormat("en-US", {
   style: "currency",
@@ -38,7 +47,21 @@ function formatMoney(value) {
   return money.format(value || 0);
 }
 
+function roundQuantity(value) {
+  return Math.round((Number(value) + Number.EPSILON) * 2) / 2;
+}
+
+function formatQuantity(value) {
+  return roundQuantity(value).toFixed(2);
+}
+
+function formatRate(rate) {
+  const percent = Math.round((Number(rate || 0) * 100 + Number.EPSILON) * 100) / 100;
+  return `${percent.toFixed(2).replace(/\.?0+$/, "")}%`;
+}
+
 function formatDate(value) {
+  if (!value) return "Date TBD";
   return new Intl.DateTimeFormat("en-US", {
     month: "short",
     day: "numeric",
@@ -72,10 +95,12 @@ function findById(items, id) {
 }
 
 function getMeatOuncesPerGuest(meatCount) {
-  if (meatCount === 1) return 8;
-  if (meatCount === 2) return 5;
-  if (meatCount === 3) return 4;
-  return 0;
+  const portions = calculatorConfig?.aLaCarte?.meatPortionOuncesBySelection || {};
+  return Number(portions[String(meatCount)] || portions[meatCount] || 0);
+}
+
+function getOuncesPerPound() {
+  return calculatorConfig.units.ouncesPerPound;
 }
 
 function getDessertDefaultSize() {
@@ -88,7 +113,7 @@ function getRecommendedQuantity(category, item, guests, selectedMeatCount = getC
 
   if (category === "meats") {
     if (item.unit === "lb") {
-      return Math.ceil((guests * getMeatOuncesPerGuest(selectedMeatCount)) / 16);
+      return roundQuantity((guests * getMeatOuncesPerGuest(selectedMeatCount)) / getOuncesPerPound());
     }
     return Math.ceil(guests / (item.piecesPerUnit || 1));
   }
@@ -118,10 +143,10 @@ function getQuantityUnitLabel(category, item) {
 
 function formatRecommendedQuantity(category, item, quantity) {
   if (category === "meats" && item.unit === "lb") {
-    return `${quantity} lb cooked recommended`;
+    return `${formatQuantity(quantity)} lb cooked recommended`;
   }
 
-  return `${pluralize(quantity, getQuantityUnitLabel(category, item))} recommended`;
+  return `${formatQuantity(quantity)} ${getQuantityUnitLabel(category, item)} recommended`;
 }
 
 function appendText(parent, tagName, text, className) {
@@ -189,6 +214,7 @@ function renderAlaCarteItem(containerId, item, category, checked = false) {
   const content = document.createElement("span");
   content.className = "choice-content";
   appendText(content, "span", item.label, "choice-name");
+  if (item.menuHelperText) appendText(content, "span", item.menuHelperText, "choice-helper");
   const meta = getAlaCarteMeta(item, category);
   if (meta) appendText(content, "span", meta, "choice-meta");
   label.append(input, content);
@@ -203,7 +229,7 @@ function renderAlaCarteItem(containerId, item, category, checked = false) {
   quantity.type = "number";
   quantity.name = quantityInputName(category, item.id);
   quantity.min = "0";
-  quantity.step = "1";
+  quantity.step = item.unit === "lb" ? "0.5" : "1";
   quantity.placeholder = "Auto";
   quantity.dataset.quantityCategory = category;
   quantity.dataset.quantityId = item.id;
@@ -321,6 +347,16 @@ function renderPackageSelections() {
 }
 
 function renderMenu(config) {
+  [
+    "#full-service-packages",
+    "#venue-types",
+    "#fulfillment-options",
+    "#a-la-carte-meats",
+    "#a-la-carte-sides",
+    "#a-la-carte-desserts",
+    "#a-la-carte-beverages"
+  ].forEach((selector) => document.querySelector(selector).replaceChildren());
+
   config.fullService.packages.forEach((item, index) => {
     renderChoice(
       "#full-service-packages",
@@ -360,6 +396,63 @@ function renderMenu(config) {
   });
 
   renderPackageSelections();
+}
+
+function syncConfigEditor() {
+  if (!isAdminView || !configEditorEl) return;
+  adminDatabaseEl.hidden = false;
+  configEditorEl.value = JSON.stringify(calculatorConfig, null, 2);
+}
+
+async function saveConfigEditor() {
+  configStatusEl.textContent = "";
+
+  try {
+    const nextConfig = JSON.parse(configEditorEl.value);
+    const response = await fetch("/api/config", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(nextConfig)
+    });
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || "Unable to save calculator values.");
+    }
+
+    calculatorConfig = data;
+    syncConfigEditor();
+    renderMenu(calculatorConfig);
+    syncMode();
+    configStatusEl.textContent = "Saved. The calculator is now using these values.";
+  } catch (error) {
+    configStatusEl.textContent = error.message;
+  }
+}
+
+async function resetConfigEditor() {
+  configStatusEl.textContent = "";
+
+  try {
+    const response = await fetch("/api/config/reset", {
+      method: "POST"
+    });
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || "Unable to reset calculator values.");
+    }
+
+    calculatorConfig = data;
+    syncConfigEditor();
+    renderMenu(calculatorConfig);
+    syncMode();
+    configStatusEl.textContent = "Defaults restored. The calculator is now using default values.";
+  } catch (error) {
+    configStatusEl.textContent = error.message;
+  }
 }
 
 function collectQuantities(category) {
@@ -431,6 +524,32 @@ function renderQuoteLines(lines) {
   });
 }
 
+function appendInvoiceRow(container, label, value) {
+  const row = document.createElement("div");
+  const term = document.createElement("dt");
+  const definition = document.createElement("dd");
+  term.textContent = label;
+  definition.textContent = formatMoney(value);
+  row.append(term, definition);
+  container.append(row);
+}
+
+function renderInvoice(invoice) {
+  invoiceItemsEl.replaceChildren();
+  invoiceSummaryEl.replaceChildren();
+
+  (invoice?.items || []).forEach((item) => {
+    appendInvoiceRow(invoiceItemsEl, item.label, item.total);
+  });
+
+  const summary = invoice?.summary || {};
+  appendInvoiceRow(invoiceSummaryEl, "Subtotal", summary.subtotal);
+  appendInvoiceRow(invoiceSummaryEl, "Taxes", summary.taxes);
+  appendInvoiceRow(invoiceSummaryEl, "Fees", summary.fees);
+  appendInvoiceRow(invoiceSummaryEl, "Deposit amount", summary.depositAmount);
+  appendInvoiceRow(invoiceSummaryEl, "Estimated total", summary.estimatedTotal);
+}
+
 function createDetailSection(title, items) {
   const section = document.createElement("section");
   appendText(section, "h3", title);
@@ -472,29 +591,29 @@ function renderAlaCarteDetails(data) {
         title: item.label,
         body:
           item.unit === "lb"
-            ? `${item.orderQuantity} lb ordered · ${item.cookedPounds} lb cooked · ${item.rawPounds} lb raw · ${item.portion} · ${priceSuffix(item)}`
-            : `${item.orderQuantity} ${item.unitLabel || item.unit} ordered · ${item.portion} · ${priceSuffix(item)}`
+            ? `${formatQuantity(item.orderQuantity)} lb ordered · ${formatQuantity(item.cookedPounds)} lb cooked · ${formatQuantity(item.rawPounds)} lb raw · ${item.portion} · ${priceSuffix(item)}`
+            : `${formatQuantity(item.orderQuantity)} ${item.unitLabel || item.unit} ordered · ${item.portion} · ${priceSuffix(item)}`
       }))
     ),
     createDetailSection(
       "Sides",
       prep.sides.map((item) => ({
         title: item.label,
-        body: `${pluralize(item.orderQuantity, "quart")} · ${item.totalOunces} oz total · ${item.portion} · ${priceSuffix(item)}`
+        body: `${formatQuantity(item.orderQuantity)} quart${item.orderQuantity === 1 ? "" : "s"} · ${formatQuantity(item.totalOunces)} oz total · ${item.portion} · ${priceSuffix(item)}`
       }))
     ),
     createDetailSection(
       "Desserts",
       prep.desserts.map((item) => ({
         title: item.label,
-        body: `${item.orderQuantity} ${item.container.label} · ${item.portions} servings · ${priceSuffix(item)}`
+        body: `${formatQuantity(item.orderQuantity)} ${item.container.label} · ${item.portions} servings · ${priceSuffix(item)}`
       }))
     ),
     createDetailSection(
       "Beverages",
       prep.beverages.map((item) => ({
         title: item.label,
-        body: `${pluralize(item.orderQuantity, "gallon")} · ${item.servings} servings · ${priceSuffix(item)}`
+        body: `${formatQuantity(item.orderQuantity)} gallon${item.orderQuantity === 1 ? "" : "s"} · ${item.servings} servings · ${priceSuffix(item)}`
       }))
     )
   );
@@ -523,14 +642,14 @@ function renderFullServiceDetails(data) {
       "Meats",
       data.prep.meats.map((item) => ({
         title: item.label,
-        body: `${item.cookedPounds} lb cooked · ${item.portion}`
+        body: `${formatQuantity(item.cookedPounds)} lb cooked · ${item.portion}`
       }))
     ),
     createDetailSection(
       "Sides",
       data.prep.sides.map((item) => ({
         title: item.label,
-        body: `${pluralize(item.quarts, "quart")} · ${item.totalPounds} lb · ${item.portion}`
+        body: `${formatQuantity(item.quarts)} quart${item.quarts === 1 ? "" : "s"} · ${formatQuantity(item.totalPounds)} lb · ${item.portion}`
       }))
     ),
     createDetailSection("Package extras", bodyFromItems(data.prep.extras))
@@ -539,6 +658,7 @@ function renderFullServiceDetails(data) {
 
 function renderResults(data) {
   errorEl.textContent = "";
+  requestStatusEl.textContent = "";
   latestQuoteData = data;
   resultsEl.hidden = false;
   emptyStateEl.hidden = true;
@@ -548,11 +668,13 @@ function renderResults(data) {
   quoteTitleEl.textContent = `${data.input.guestCount} guests · ${formatDate(data.input.eventDate)}`;
   quoteTotalEl.textContent = formatMoney(data.quote.totalQuote);
   depositTotalEl.textContent = formatMoney(data.quote.deposit);
+  depositLabelEl.textContent = `${formatRate(data.quote.depositRate)} deposit to reserve`;
   guestSummaryCopyEl.textContent =
-    "This estimate includes the selected catering service, production fee, and sales tax. To reserve your date, request follow-up and we will contact you to confirm availability and collect the 25% deposit.";
+    `This estimate includes the selected catering service, production fee, and sales tax. To reserve your date, request follow-up and we will contact you to confirm availability and collect the ${formatRate(data.quote.depositRate)} deposit.`;
   disclaimerEl.textContent = data.disclaimer;
 
   renderQuoteLines(data.quote.lines);
+  renderInvoice(data.quote.invoice);
   adminBreakdownEl.hidden = !isAdminView;
   adminDetailsEl.hidden = !isAdminView;
   guestSummaryEl.hidden = isAdminView;
@@ -624,7 +746,7 @@ function syncRecommendedQuantities() {
     const category = quantity.dataset.quantityCategory;
     const item = findById(calculatorConfig.aLaCarte[category], quantity.dataset.quantityId);
     const recommendedQuantity = getRecommendedQuantity(category, item, guests, selectedMeatCount);
-    const recommendedValue = String(recommendedQuantity);
+    const recommendedValue = formatQuantity(recommendedQuantity);
     const canAutoFill =
       quantity.dataset.userEdited !== "true" ||
       quantity.value === "" ||
@@ -732,65 +854,9 @@ function updateQuantityPreview() {
   }
 }
 
-function buildRequestEmail(data) {
-  const formData = new FormData(requestFormEl);
-  const name = String(formData.get("name") || data.input.guestName || "").trim();
-  const email = String(formData.get("email") || data.input.guestEmail || "").trim();
-  const phone = String(formData.get("phone") || data.input.guestPhone || "").trim();
-  const notes = String(formData.get("notes") || "").trim();
-  const subject = `Catering quote request - ${data.input.guestCount} guests on ${formatDate(data.input.eventDate)}`;
-  const lines = [
-    "We like what we saw and we're ready to move forward. Please contact us to pay the 25% deposit.",
-    "",
-    `Name: ${name}`,
-    `Email: ${email}`,
-    `Phone: ${phone || "Not provided"}`,
-    `Nature of event: ${data.input.eventType || "Not provided"}`,
-    "",
-    `Event date: ${formatDate(data.input.eventDate)}`,
-    `Guest count: ${data.input.guestCount}`,
-    `Quote type: ${data.mode === "full-service" ? "Full-service buffet" : "Pickup / delivery"}`,
-    ...buildRequestSelectionLines(data),
-    `Estimated total: ${formatMoney(data.quote.totalQuote)}`,
-    `25% deposit to reserve: ${formatMoney(data.quote.deposit)}`,
-    "",
-    `Notes: ${notes || "None"}`
-  ];
-
-  return `mailto:${requestRecipient}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(lines.join("\n"))}`;
-}
-
-function buildRequestSelectionLines(data) {
-  if (data.mode === "full-service") {
-    return [
-      `Selected package: ${data.selections.package.label}`,
-      `Selected meats: ${data.selections.meats.join(", ") || "None"}`,
-      `Selected sides: ${data.selections.sides.join(", ") || "None"}`,
-      `Selected dessert: ${data.selections.desserts.join(", ") || "None"}`,
-      `Service/event type: ${data.input.venueType.label}`,
-      `Percentage add-on: ${Math.round(data.quote.productionFeeRate * 100)}% production fee (${formatMoney(data.quote.productionFee)})`
-    ];
-  }
-
-  const itemLines = flattenRequestItems(data.prep).map(
-    (item) =>
-      `- ${item.label}: ${item.orderQuantity} ${item.unitLabel || item.unit || item.container?.label || "each"}`
-  );
-
-  return [
-    `Pickup/delivery choice: ${data.input.fulfillment.label}`,
-    `Percentage add-on: ${Math.round(data.quote.productionFeeRate * 100)}% (${formatMoney(data.quote.productionFee)})`,
-    "Item quantities:",
-    ...itemLines
-  ];
-}
-
-function flattenRequestItems(prep) {
-  return [...prep.meats, ...prep.sides, ...prep.desserts, ...prep.beverages];
-}
-
 function openRequestDialog() {
   if (!latestQuoteData) return;
+  requestStatusEl.textContent = "";
   requestFormEl.elements.namedItem("name").value = latestQuoteData.input.guestName || "";
   requestFormEl.elements.namedItem("email").value = latestQuoteData.input.guestEmail || "";
   requestFormEl.elements.namedItem("phone").value = latestQuoteData.input.guestPhone || "";
@@ -805,11 +871,45 @@ function closeRequestDialog() {
   requestDialogEl.close();
 }
 
-function submitRequest(event) {
+async function submitRequest(event) {
   event.preventDefault();
-  if (!latestQuoteData || !requestFormEl.reportValidity()) return;
-  window.location.href = buildRequestEmail(latestQuoteData);
-  closeRequestDialog();
+  if (!latestQuoteData || !latestQuotePayload || !requestFormEl.reportValidity()) return;
+
+  const formData = new FormData(requestFormEl);
+  const submitButton = requestFormEl.querySelector('button[type="submit"]');
+  submitButton.disabled = true;
+  submitButton.textContent = "Submitting...";
+
+  try {
+    const response = await fetch("/api/quote-request", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        quotePayload: latestQuotePayload,
+        contact: {
+          name: String(formData.get("name") || "").trim(),
+          email: String(formData.get("email") || "").trim(),
+          phone: String(formData.get("phone") || "").trim()
+        },
+        notes: String(formData.get("notes") || "").trim()
+      })
+    });
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || "Unable to submit quote request.");
+    }
+
+    closeRequestDialog();
+    requestStatusEl.textContent = data.message || "Your quote has been submitted. We will be in touch soon!";
+  } catch (error) {
+    requestStatusEl.textContent = error.message;
+  } finally {
+    submitButton.disabled = false;
+    submitButton.textContent = "Submit quote request";
+  }
 }
 
 async function calculate(event) {
@@ -818,12 +918,13 @@ async function calculate(event) {
   if (!validateFullServiceSelections()) return;
 
   try {
+    const payload = collectPayload();
     const response = await fetch("/api/calculate", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify(collectPayload())
+      body: JSON.stringify(payload)
     });
     const data = await response.json();
 
@@ -831,6 +932,7 @@ async function calculate(event) {
       throw new Error(data.error || "Unable to calculate quote.");
     }
 
+    latestQuotePayload = payload;
     renderResults(data);
   } catch (error) {
     errorEl.textContent = error.message;
@@ -840,6 +942,7 @@ async function calculate(event) {
 async function init() {
   const response = await fetch("/api/config");
   calculatorConfig = await response.json();
+  syncConfigEditor();
   renderMenu(calculatorConfig);
   syncMode();
   form.addEventListener("change", (event) => {
@@ -872,6 +975,10 @@ async function init() {
   requestActionEl.addEventListener("click", openRequestDialog);
   requestCancelEl.addEventListener("click", closeRequestDialog);
   requestFormEl.addEventListener("submit", submitRequest);
+  if (isAdminView) {
+    configSaveEl.addEventListener("click", saveConfigEditor);
+    configResetEl.addEventListener("click", resetConfigEditor);
+  }
   form.addEventListener("submit", calculate);
 }
 

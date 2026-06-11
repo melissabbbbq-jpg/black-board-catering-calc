@@ -126,6 +126,49 @@ h3 {
   padding: 22px;
 }
 
+.admin-database {
+  display: grid;
+  gap: 14px;
+  margin-bottom: 20px;
+  padding: 22px;
+}
+
+.admin-database-header {
+  display: flex;
+  gap: 16px;
+  align-items: start;
+  justify-content: space-between;
+}
+
+.admin-database-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.admin-database-actions button {
+  min-width: 130px;
+}
+
+.admin-database-help {
+  max-width: 780px;
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.config-editor {
+  width: 100%;
+  min-height: 440px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fafafa;
+  color: var(--ink);
+  padding: 14px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.86rem;
+  line-height: 1.5;
+}
+
 .form-panel {
   display: grid;
   gap: 20px;
@@ -255,10 +298,15 @@ legend {
 }
 
 .mode-choice small,
-.choice-meta {
+.choice-meta,
+.choice-helper {
   color: var(--muted);
   font-size: 0.81rem;
   line-height: 1.28;
+}
+
+.choice-helper {
+  font-size: 0.76rem;
 }
 
 .choice:has(input:focus-visible),
@@ -435,6 +483,60 @@ legend {
   font-size: 1.4rem;
 }
 
+.draft-invoice {
+  display: grid;
+  gap: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-strong);
+  padding: 14px;
+}
+
+.draft-invoice h3 {
+  margin: 0;
+}
+
+.invoice-lines {
+  display: grid;
+  gap: 9px;
+  margin: 0;
+}
+
+.invoice-lines div {
+  display: flex;
+  gap: 14px;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(212, 212, 212, 0.85);
+  padding-bottom: 9px;
+}
+
+.invoice-lines dt {
+  color: var(--muted);
+}
+
+.invoice-lines dd {
+  margin: 0;
+  font-weight: 850;
+  text-align: right;
+}
+
+.invoice-summary {
+  border-top: 1px solid var(--line);
+  padding-top: 10px;
+}
+
+.invoice-summary div:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.request-status {
+  min-height: 20px;
+  margin: -4px 0 0;
+  color: var(--green);
+  font-weight: 850;
+}
+
 
 .request-dialog {
   width: min(520px, calc(100% - 28px));
@@ -564,6 +666,11 @@ li span {
   }
 
   .result-header {
+    display: grid;
+  }
+
+  .admin-database-header,
+  .admin-database-actions {
     display: grid;
   }
 

@@ -1,393 +1,57 @@
-const CONFIG = {
-  taxRate: 0.0825,
-  depositRate: 0.25,
-  fullService: {
-    productionFeeRate: 0.3,
-    recommendedMinimumGuests: 50,
-    buffetOverageRate: 0.15,
-    prepPortions: {
-      meatOuncesPerGuest: 5,
-      sideOuncesPerGuest: 4,
-      saladOuncesPerGuest: 3,
-      dessertServingsPerGuest: 1,
-      beverageServingsPerGuest: 1.25,
-      beverageServingsPerGallon: 16
-    },
-    packages: [
-      {
-        id: "texas-two-step",
-        label: "Texas Two-Step",
-        pricePerPerson: 25,
-        includes: "2 meats + 2 sides",
-        requiredMeats: 2,
-        requiredSides: 2,
-        requiredDesserts: 0,
-        fixedMeats: [],
-        fixedSides: [],
-        salad: false,
-        dessert: false,
-        beverage: false
-      },
-      {
-        id: "texas-smoke-show",
-        label: "Texas Smoke Show",
-        pricePerPerson: 30,
-        includes: "Garden salad, 2 meats, 2 sides, beverage",
-        requiredMeats: 2,
-        requiredSides: 2,
-        requiredDesserts: 0,
-        fixedMeats: [],
-        fixedSides: [],
-        salad: true,
-        dessert: false,
-        beverage: true
-      },
-      {
-        id: "texas-trinity",
-        label: "Texas Trinity",
-        pricePerPerson: 35,
-        includes: "Brisket, ribs, sausage + 2 sides",
-        requiredMeats: 0,
-        requiredSides: 2,
-        requiredDesserts: 0,
-        fixedMeats: ["smoked-prime-brisket", "pork-spare-ribs", "garlic-confit-sausage"],
-        fixedSides: [],
-        salad: false,
-        dessert: false,
-        beverage: false
-      },
-      {
-        id: "whole-dang-barn",
-        label: "The Whole Dang Barn",
-        pricePerPerson: 47,
-        includes: "Garden salad, 4 meats, 4 sides, dessert, beverage station",
-        requiredMeats: 4,
-        requiredSides: 4,
-        requiredDesserts: 1,
-        fixedMeats: [],
-        fixedSides: [],
-        salad: true,
-        dessert: true,
-        beverage: true
-      }
-    ],
-    venueTypes: [
-      {
-        id: "offsite",
-        label: "Off-site full service",
-        foodBeverageMinimum: 2000,
-        rentalFee: 0,
-        note: "Labor is estimated after event details. Plan starts at 1 team member per 25 guests."
-      },
-      {
-        id: "restaurant-buyout",
-        label: "At Black Board buy-out",
-        foodBeverageMinimum: 1200,
-        rentalFee: 1050,
-        rentalLabel: "3-hour restaurant rental",
-        note: "Labor is included with the restaurant rental. Additional hours are quoted separately."
-      }
-    ]
-  },
-  aLaCarte: {
-    usesSamplePricing: false,
-    maxMeats: 3,
-    pickupProductionFeeRate: 0.2,
-    dropoffProductionFeeRate: 0.3,
-    pickupWeekdayMinimum: 500,
-    dropoffMinimum: 500,
-    dessertDefaultContainerSize: "full-tray",
-    dessertContainerSizes: [
-      {
-        id: "quart",
-        label: "Quart",
-        servings: 8
-      },
-      {
-        id: "half-tray",
-        label: "1/2 tray",
-        servings: 20
-      },
-      {
-        id: "full-tray",
-        label: "Full tray",
-        servings: 40
-      }
-    ],
-    fulfillmentOptions: [
-      {
-        id: "pickup",
-        label: "Large pick-up",
-        description: "Best for 20-50 guests. No minimum Friday-Sunday; $500 minimum Monday-Thursday."
-      },
-      {
-        id: "dropoff",
-        label: "Large drop-off",
-        description: "$500 food and beverage minimum. Production fee includes delivery within 30 miles."
-      }
-    ],
-    meats: [
-      {
-        id: "smoked-prime-brisket",
-        label: "Smoked Prime Brisket",
-        unit: "lb",
-        unitLabel: "lb cooked",
-        rawYield: 0.5,
-        yieldNote: "Sold by the cooked pound.",
-        active: true,
-        pricePerUnit: 36
-      },
-      {
-        id: "pork-spare-ribs",
-        label: "Pork Spare Ribs",
-        unit: "lb",
-        unitLabel: "lb cooked",
-        rawYield: 0.6,
-        yieldNote: "Sold by the cooked pound.",
-        active: true,
-        pricePerUnit: 28
-      },
-      {
-        id: "whole-smoked-chicken",
-        label: "Whole Smoked Chicken",
-        unit: "bird",
-        unitLabel: "bird",
-        piecesPerUnit: 8,
-        yieldNote: "Sold by the bird. Each whole smoked chicken yields 8 pieces.",
-        active: true,
-        pricePerUnit: 18
-      },
-      {
-        id: "pulled-pork",
-        label: "Pulled Pork",
-        unit: "lb",
-        unitLabel: "lb cooked",
-        rawYield: 0.65,
-        yieldNote: "Sold by the cooked pound.",
-        active: true,
-        pricePerUnit: 22
-      },
-      {
-        id: "garlic-confit-sausage",
-        label: "Garlic Confit Sausage",
-        unit: "lb",
-        unitLabel: "lb cooked",
-        rawYield: 0.85,
-        yieldNote: "Sold by the cooked pound.",
-        active: true,
-        pricePerUnit: 20
-      },
-      {
-        id: "jalapeno-cheddar-sausage",
-        label: "Jalapeno Cheddar Sausage",
-        unit: "lb",
-        unitLabel: "lb cooked",
-        rawYield: 0.85,
-        yieldNote: "Sold by the cooked pound.",
-        active: true,
-        pricePerUnit: 21
-      },
-      {
-        id: "turkey-breast",
-        label: "Turkey Breast",
-        unit: "lb",
-        unitLabel: "lb cooked",
-        rawYield: 0.62,
-        yieldNote: "Sold by the cooked pound.",
-        active: true,
-        pricePerUnit: 24
-      }
-    ],
-    sides: [
-      {
-        id: "creamy-jalapeno-slaw",
-        label: "Creamy Jalapeno Slaw",
-        unit: "quart",
-        unitLabel: "quart",
-        ouncesPerGuest: 4,
-        ouncesPerUnit: 32,
-        yieldNote: "Sold by the quart.",
-        active: true,
-        pricePerUnit: 20
-      },
-      {
-        id: "charro-beans",
-        label: "Charro Beans",
-        unit: "quart",
-        unitLabel: "quart",
-        ouncesPerGuest: 4,
-        ouncesPerUnit: 32,
-        yieldNote: "Sold by the quart.",
-        active: true,
-        pricePerUnit: 20
-      },
-      {
-        id: "stone-ground-potato-salad",
-        label: "Stone Ground Mustard Potato Salad",
-        unit: "quart",
-        unitLabel: "quart",
-        ouncesPerGuest: 4,
-        ouncesPerUnit: 32,
-        yieldNote: "Sold by the quart.",
-        active: true,
-        pricePerUnit: 20
-      },
-      {
-        id: "mac-n-cheese",
-        label: "Mac N Cheese",
-        unit: "quart",
-        unitLabel: "quart",
-        ouncesPerGuest: 4,
-        ouncesPerUnit: 32,
-        yieldNote: "Sold by the quart.",
-        active: true,
-        pricePerUnit: 20
-      },
-      {
-        id: "garlicky-green-beans",
-        label: "Garlicky Green Beans",
-        unit: "quart",
-        unitLabel: "quart",
-        ouncesPerGuest: 4,
-        ouncesPerUnit: 32,
-        yieldNote: "Sold by the quart.",
-        active: true,
-        pricePerUnit: 20
-      }
-    ],
-    desserts: [
-      {
-        id: "seasonal-cobbler",
-        label: "Seasonal Cobbler",
-        unit: "container",
-        unitLabel: "container",
-        portionsPerGuest: 1,
-        yieldNote: "Configured by backend dessert default.",
-        active: true,
-        priceByContainer: {
-          "quart": 18,
-          "half-tray": 55,
-          "full-tray": 95
-        }
-      },
-      {
-        id: "shortbread-banana-pudding",
-        label: "Shortbread Banana Pudding",
-        unit: "container",
-        unitLabel: "container",
-        portionsPerGuest: 1,
-        yieldNote: "Configured by backend dessert default.",
-        active: true,
-        priceByContainer: {
-          "quart": 16,
-          "half-tray": 45,
-          "full-tray": 80
-        }
-      },
-      {
-        id: "shiner-bock-brownie-bites",
-        label: "Shiner Bock Caramel Brownie Bites",
-        unit: "container",
-        unitLabel: "container",
-        portionsPerGuest: 1,
-        yieldNote: "Configured by backend dessert default.",
-        active: true,
-        priceByContainer: {
-          "quart": 18,
-          "half-tray": 45,
-          "full-tray": 80
-        }
-      },
-      {
-        id: "brown-butter-cookies",
-        label: "Brown Butter, Sea Salt + Chocolate Chip Cookies",
-        unit: "container",
-        unitLabel: "container",
-        portionsPerGuest: 1.5,
-        yieldNote: "Configured by backend dessert default.",
-        active: true,
-        priceByContainer: {
-          "quart": 16,
-          "half-tray": 40,
-          "full-tray": 75
-        }
-      },
-      {
-        id: "minimalist-carrot-cake-bites",
-        label: "Minimalist Carrot Cake Bites",
-        unit: "container",
-        unitLabel: "container",
-        portionsPerGuest: 1,
-        yieldNote: "Configured by backend dessert default.",
-        active: true,
-        priceByContainer: {
-          "quart": 18,
-          "half-tray": 45,
-          "full-tray": 80
-        }
-      },
-      {
-        id: "buttermilk-pie-bars",
-        label: "Buttermilk Pie Bars",
-        unit: "container",
-        unitLabel: "container",
-        portionsPerGuest: 1,
-        yieldNote: "Configured by backend dessert default.",
-        active: true,
-        priceByContainer: {
-          "quart": 18,
-          "half-tray": 45,
-          "full-tray": 80
-        }
-      },
-      {
-        id: "bourbon-bread-pudding",
-        label: "Bourbon Sauce Bread Pudding",
-        unit: "container",
-        unitLabel: "container",
-        portionsPerGuest: 1,
-        yieldNote: "Configured by backend dessert default.",
-        active: true,
-        priceByContainer: {
-          "quart": 20,
-          "half-tray": 55,
-          "full-tray": 95
-        }
-      }
-    ],
-    beverages: [
-      {
-        id: "sweet-unsweet-tea",
-        label: "Sweet & Unsweet Tea",
-        unit: "gallon",
-        unitLabel: "gallon",
-        servingsPerGuest: 1,
-        servingsPerUnit: 16,
-        yieldNote: "Sold by the gallon.",
-        active: true,
-        pricePerUnit: 12
-      },
-      {
-        id: "fresh-lemonade",
-        label: "Fresh Squeezed Lemonade",
-        unit: "gallon",
-        unitLabel: "gallon",
-        servingsPerGuest: 1,
-        servingsPerUnit: 16,
-        yieldNote: "Sold by the gallon.",
-        active: true,
-        pricePerUnit: 16
-      }
-    ]
-  }
-};
+const { getCalculatorConfig, saveCalculatorConfig: writeCalculatorConfig, resetCalculatorConfig: resetStoredCalculatorConfig } = require("./config-store");
+
+let CONFIG = getCalculatorConfig();
+
+function reloadCalculatorConfig() {
+  CONFIG = getCalculatorConfig();
+  return CONFIG;
+}
+
+function saveCalculatorConfig(config) {
+  CONFIG = writeCalculatorConfig(config);
+  return CONFIG;
+}
+
+function resetCalculatorConfig() {
+  CONFIG = resetStoredCalculatorConfig();
+  return CONFIG;
+}
+
+function getCurrentConfig() {
+  return CONFIG;
+}
 
 function roundCurrency(value) {
   return Math.round((Number(value) + Number.EPSILON) * 100) / 100;
 }
 
 function roundQuantity(value) {
-  return Math.round((Number(value) + Number.EPSILON) * 10) / 10;
+  return Math.round((Number(value) + Number.EPSILON) * 2) / 2;
+}
+
+function formatRate(rate) {
+  const percent = Math.round((Number(rate) * 100 + Number.EPSILON) * 100) / 100;
+  return `${percent.toFixed(2).replace(/\.?0+$/, "")}%`;
+}
+
+function formatQuantity(value) {
+  return roundQuantity(value).toFixed(2);
+}
+
+function buildInvoice({ items, quote }) {
+  return {
+    items: items.map((item) => ({
+      label: item.label,
+      total: roundCurrency(item.total)
+    })),
+    summary: {
+      subtotal: roundCurrency(quote.preFeeSubtotal),
+      taxes: roundCurrency(quote.salesTax),
+      fees: roundCurrency(quote.productionFee),
+      depositAmount: roundCurrency(quote.deposit),
+      estimatedTotal: roundCurrency(quote.totalQuote)
+    }
+  };
 }
 
 function asArray(value) {
@@ -419,6 +83,7 @@ function findSelected(ids, items, label) {
 }
 
 function requireDate(eventDate) {
+  if (!eventDate) return;
   if (!/^\d{4}-\d{2}-\d{2}$/.test(eventDate)) {
     throw new Error("Enter a valid event date.");
   }
@@ -431,10 +96,16 @@ function requireGuestCount(guestCount) {
 }
 
 function getMeatOuncesPerGuest(meatCount) {
-  if (meatCount === 1) return 8;
-  if (meatCount === 2) return 5;
-  if (meatCount === 3) return 4;
-  return 0;
+  const portions = CONFIG.aLaCarte.meatPortionOuncesBySelection || {};
+  return Number(portions[String(meatCount)] || portions[meatCount] || 0);
+}
+
+function getOuncesPerPound() {
+  return CONFIG.units.ouncesPerPound;
+}
+
+function getOuncesPerQuart() {
+  return CONFIG.units.ouncesPerQuart;
 }
 
 function getProductionMath({ subtotal, minimum = 0, extraFee = 0, productionFeeRate }) {
@@ -553,7 +224,8 @@ function calculateFullServiceQuote(payload = {}) {
     extraFee: venueType.rentalFee,
     productionFeeRate: CONFIG.fullService.productionFeeRate
   });
-  const teamMembers = Math.ceil(input.guestCount / 25);
+  const teamGuestsPerStaffMember = CONFIG.fullService.teamGuestsPerStaffMember;
+  const teamMembers = Math.ceil(input.guestCount / teamGuestsPerStaffMember);
   const prep = calculateFullServicePrep({
     guestCount: input.guestCount,
     selectedPackage,
@@ -575,11 +247,46 @@ function calculateFullServiceQuote(payload = {}) {
 
   lines.push(
     moneyLine("Pre-fee subtotal", math.preFeeSubtotal),
-    moneyLine("30% production fee", math.productionFee),
-    moneyLine("8.25% sales tax", math.salesTax),
-    moneyLine("25% deposit to reserve", math.deposit),
+    moneyLine(`${formatRate(CONFIG.fullService.productionFeeRate)} production fee`, math.productionFee),
+    moneyLine(`${formatRate(CONFIG.taxRate)} sales tax`, math.salesTax),
+    moneyLine(`${formatRate(CONFIG.depositRate)} deposit to reserve`, math.deposit),
     moneyLine("Estimated balance after deposit", math.balanceDue)
   );
+
+  const quote = {
+    packageSubtotal: roundCurrency(packageSubtotal),
+    minimumAdjustment: roundCurrency(math.minimumAdjustment),
+    preFeeSubtotal: roundCurrency(math.preFeeSubtotal),
+    productionFeeRate: CONFIG.fullService.productionFeeRate,
+    productionFee: roundCurrency(math.productionFee),
+    taxRate: CONFIG.taxRate,
+    salesTax: roundCurrency(math.salesTax),
+    totalQuote: roundCurrency(math.totalQuote),
+    depositRate: CONFIG.depositRate,
+    deposit: roundCurrency(math.deposit),
+    balanceDue: roundCurrency(math.balanceDue),
+    lines
+  };
+  const invoiceItems = [
+    {
+      label: selectedPackage.label,
+      total: packageSubtotal
+    }
+  ];
+
+  if (math.minimumAdjustment > 0) {
+    invoiceItems.push({
+      label: "Minimum adjustment",
+      total: math.minimumAdjustment
+    });
+  }
+
+  if (venueType.rentalFee > 0) {
+    invoiceItems.push({
+      label: venueType.rentalLabel || "Venue rental",
+      total: venueType.rentalFee
+    });
+  }
 
   return {
     mode: "full-service",
@@ -594,18 +301,11 @@ function calculateFullServiceQuote(payload = {}) {
       desserts: packageSelections.desserts.map((item) => item.label)
     },
     quote: {
-      packageSubtotal: roundCurrency(packageSubtotal),
-      minimumAdjustment: roundCurrency(math.minimumAdjustment),
-      preFeeSubtotal: roundCurrency(math.preFeeSubtotal),
-      productionFeeRate: CONFIG.fullService.productionFeeRate,
-      productionFee: roundCurrency(math.productionFee),
-      taxRate: CONFIG.taxRate,
-      salesTax: roundCurrency(math.salesTax),
-      totalQuote: roundCurrency(math.totalQuote),
-      depositRate: CONFIG.depositRate,
-      deposit: roundCurrency(math.deposit),
-      balanceDue: roundCurrency(math.balanceDue),
-      lines
+      ...quote,
+      invoice: buildInvoice({
+        items: invoiceItems,
+        quote
+      })
     },
     detailSections: [
       {
@@ -637,8 +337,8 @@ function calculateFullServicePrep({ guestCount, selectedPackage, packageSelectio
   const overageRate = CONFIG.fullService.buffetOverageRate;
   const plannedGuests = Math.ceil(guestCount * (1 + overageRate));
   const portions = CONFIG.fullService.prepPortions;
-  const meatPoundsPerSelection = (plannedGuests * portions.meatOuncesPerGuest) / 16;
-  const sideQuartsPerSelection = (plannedGuests * portions.sideOuncesPerGuest) / 32;
+  const meatPoundsPerSelection = (plannedGuests * portions.meatOuncesPerGuest) / getOuncesPerPound();
+  const sideQuartsPerSelection = (plannedGuests * portions.sideOuncesPerGuest) / getOuncesPerQuart();
   const prep = {
     overageRate,
     plannedGuests,
@@ -660,14 +360,14 @@ function calculateFullServicePrep({ guestCount, selectedPackage, packageSelectio
       label: side.label || `Side selection ${index + 1}`,
       portion: `${portions.sideOuncesPerGuest} oz per planned guest`,
       quarts: Math.ceil(sideQuartsPerSelection),
-      totalPounds: roundQuantity((plannedGuests * portions.sideOuncesPerGuest) / 16)
+      totalPounds: roundQuantity((plannedGuests * portions.sideOuncesPerGuest) / getOuncesPerPound())
     });
   });
 
   if (selectedPackage.salad) {
     prep.extras.push({
       label: "Garden salad",
-      body: `${roundQuantity((plannedGuests * portions.saladOuncesPerGuest) / 16)} lb · ${portions.saladOuncesPerGuest} oz per planned guest`
+      body: `${formatQuantity((plannedGuests * portions.saladOuncesPerGuest) / getOuncesPerPound())} lb · ${portions.saladOuncesPerGuest} oz per planned guest`
     });
   }
 
@@ -690,15 +390,16 @@ function calculateFullServicePrep({ guestCount, selectedPackage, packageSelectio
   return prep;
 }
 
-function dateIsFridayToSunday(eventDate) {
+function dateUsesPickupNoMinimum(eventDate) {
+  if (!eventDate) return false;
   const day = new Date(`${eventDate}T00:00:00`).getDay();
-  return day === 5 || day === 6 || day === 0;
+  return CONFIG.aLaCarte.pickupNoMinimumDays.includes(day);
 }
 
 function getAlaCarteMinimum(eventDate, fulfillmentId) {
   if (fulfillmentId === "dropoff") return CONFIG.aLaCarte.dropoffMinimum;
   if (fulfillmentId === "pickup") {
-    return dateIsFridayToSunday(eventDate) ? 0 : CONFIG.aLaCarte.pickupWeekdayMinimum;
+    return dateUsesPickupNoMinimum(eventDate) ? 0 : CONFIG.aLaCarte.pickupWeekdayMinimum;
   }
   throw new Error("Choose pickup or drop-off.");
 }
@@ -755,9 +456,9 @@ function calculateAlaCartePrep({ guestCount, meats, sides, desserts, beverages, 
   return {
     meats: meats.map((meat) => {
       const cookedOunces = guestCount * cookedOuncesPerGuest;
-      const recommendedCookedPounds = cookedOunces / 16;
+      const recommendedCookedPounds = cookedOunces / getOuncesPerPound();
       const recommendedQuantity =
-        meat.unit === "lb" ? Math.ceil(recommendedCookedPounds) : Math.ceil(guestCount / (meat.piecesPerUnit || 1));
+        meat.unit === "lb" ? roundQuantity(recommendedCookedPounds) : Math.ceil(guestCount / (meat.piecesPerUnit || 1));
       const orderQuantity = getQuantityOverride(payload, "meats", meat) ?? recommendedQuantity;
       const cookedPounds = meat.unit === "lb" ? orderQuantity : null;
       const rawPounds = meat.rawYield ? cookedPounds / meat.rawYield : null;
@@ -794,7 +495,7 @@ function calculateAlaCartePrep({ guestCount, meats, sides, desserts, beverages, 
         unit: side.unit,
         portion: `${side.ouncesPerGuest} oz per guest`,
         totalOunces: roundQuantity(totalOunces),
-        totalPounds: roundQuantity(totalOunces / 16),
+        totalPounds: roundQuantity(totalOunces / getOuncesPerPound()),
         recommendedQuantity,
         orderQuantity,
         unitPrice: roundCurrency(unitPrice),
@@ -905,13 +606,41 @@ function calculateAlaCarteQuote(payload = {}) {
 
   lines.push(
     moneyLine(
-      `${fulfillment.id === "pickup" ? "Pickup" : "Delivery"} add-on (${Math.round(productionFeeRate * 100)}%)`,
+      `${fulfillment.id === "pickup" ? "Pickup" : "Delivery"} add-on (${formatRate(productionFeeRate)})`,
       math.productionFee
     ),
-    moneyLine("8.25% sales tax", math.salesTax),
-    moneyLine("25% deposit to reserve", math.deposit),
+    moneyLine(`${formatRate(CONFIG.taxRate)} sales tax`, math.salesTax),
+    moneyLine(`${formatRate(CONFIG.depositRate)} deposit to reserve`, math.deposit),
     moneyLine("Estimated balance after deposit", math.balanceDue)
   );
+  const quote = {
+    menuSubtotal: roundCurrency(menuSubtotal),
+    minimum,
+    minimumAdjustment: roundCurrency(math.minimumAdjustment),
+    preFeeSubtotal: roundCurrency(math.preFeeSubtotal),
+    productionFeeRate,
+    productionFee: roundCurrency(math.productionFee),
+    taxRate: CONFIG.taxRate,
+    salesTax: roundCurrency(math.salesTax),
+    totalQuote: roundCurrency(math.totalQuote),
+    depositRate: CONFIG.depositRate,
+    deposit: roundCurrency(math.deposit),
+    balanceDue: roundCurrency(math.balanceDue),
+    pricingIncomplete,
+    usesSamplePricing: CONFIG.aLaCarte.usesSamplePricing,
+    lines
+  };
+  const invoiceItems = allPrepItems.map((item) => ({
+    label: item.label,
+    total: item.lineTotal
+  }));
+
+  if (math.minimumAdjustment > 0) {
+    invoiceItems.push({
+      label: "Minimum adjustment",
+      total: math.minimumAdjustment
+    });
+  }
 
   return {
     mode: "a-la-carte",
@@ -927,21 +656,11 @@ function calculateAlaCarteQuote(payload = {}) {
       beverages: beverages.map((item) => item.label)
     },
     quote: {
-      menuSubtotal: roundCurrency(menuSubtotal),
-      minimum,
-      minimumAdjustment: roundCurrency(math.minimumAdjustment),
-      preFeeSubtotal: roundCurrency(math.preFeeSubtotal),
-      productionFeeRate,
-      productionFee: roundCurrency(math.productionFee),
-      taxRate: CONFIG.taxRate,
-      salesTax: roundCurrency(math.salesTax),
-      totalQuote: roundCurrency(math.totalQuote),
-      depositRate: CONFIG.depositRate,
-      deposit: roundCurrency(math.deposit),
-      balanceDue: roundCurrency(math.balanceDue),
-      pricingIncomplete,
-      usesSamplePricing: CONFIG.aLaCarte.usesSamplePricing,
-      lines
+      ...quote,
+      invoice: buildInvoice({
+        items: invoiceItems,
+        quote
+      })
     },
     prep,
     detailSections: [
@@ -975,6 +694,10 @@ function calculateQuote(payload = {}) {
 
 module.exports = {
   CONFIG,
+  getCurrentConfig,
+  reloadCalculatorConfig,
+  saveCalculatorConfig,
+  resetCalculatorConfig,
   calculateQuote,
   calculateFullServiceQuote,
   calculateAlaCarteQuote,
