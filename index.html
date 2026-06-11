@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Black Board Bar-B-Q Catering Calculator</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <section class="intro">
+        <p class="eyebrow" id="view-eyebrow">Black Board Bar-B-Q</p>
+        <h1>Catering Quote Calculator</h1>
+      </section>
+
+      <section class="workspace" aria-label="Catering calculator">
+        <form class="panel form-panel" id="quote-form">
+          <fieldset>
+            <legend>Calculator</legend>
+            <div class="mode-switch">
+              <label class="mode-choice">
+                <input type="radio" name="calculatorType" value="full-service" checked />
+                <span>
+                  <strong>Full-service buffet</strong>
+                  <small>Package price per guest</small>
+                </span>
+              </label>
+              <label class="mode-choice">
+                <input type="radio" name="calculatorType" value="a-la-carte" />
+                <span>
+                  <strong>Pickup / delivery</strong>
+                  <small>Bulk a la carte quantities</small>
+                </span>
+              </label>
+            </div>
+          </fieldset>
+
+          <div class="field-grid">
+            <label class="field">
+              <span>Name</span>
+              <input id="guest-name" name="guestName" autocomplete="name" required />
+            </label>
+
+            <label class="field">
+              <span>Phone number</span>
+              <input id="guest-phone" name="guestPhone" autocomplete="tel" required />
+            </label>
+
+            <label class="field">
+              <span>Email address</span>
+              <input id="guest-email" name="guestEmail" type="email" autocomplete="email" required />
+            </label>
+
+            <label class="field">
+              <span>Nature of event</span>
+              <input id="event-type" name="eventType" placeholder="Wedding, corporate lunch, birthday..." required />
+            </label>
+
+            <label class="field">
+              <span>Event date</span>
+              <input id="event-date" name="eventDate" type="date" required />
+            </label>
+
+            <label class="field">
+              <span>Guest count</span>
+              <input
+                id="guest-count"
+                name="guestCount"
+                type="number"
+                min="1"
+                step="1"
+                value="50"
+                required
+              />
+            </label>
+          </div>
+
+          <section class="calculator-panel" data-calculator-panel="full-service">
+            <fieldset>
+              <legend>Buffet package</legend>
+              <div class="choice-grid package-grid" id="full-service-packages"></div>
+            </fieldset>
+
+            <fieldset>
+              <legend>Package selections</legend>
+              <div class="package-selections" id="package-selections"></div>
+            </fieldset>
+
+            <fieldset>
+              <legend>Event type</legend>
+              <div class="choice-grid" id="venue-types"></div>
+            </fieldset>
+          </section>
+
+          <section class="calculator-panel" data-calculator-panel="a-la-carte" hidden>
+            <fieldset>
+              <legend>Pickup or delivery</legend>
+              <div class="choice-grid" id="fulfillment-options"></div>
+            </fieldset>
+
+            <fieldset>
+              <legend>Smoked meats</legend>
+              <div class="item-list" id="a-la-carte-meats"></div>
+            </fieldset>
+
+            <fieldset>
+              <legend>Sides</legend>
+              <div class="item-list" id="a-la-carte-sides"></div>
+            </fieldset>
+
+            <fieldset>
+              <legend>Desserts</legend>
+              <div class="item-list" id="a-la-carte-desserts"></div>
+            </fieldset>
+
+            <fieldset>
+              <legend>Beverages</legend>
+              <div class="item-list" id="a-la-carte-beverages"></div>
+            </fieldset>
+
+            <section class="quantity-preview" aria-live="polite">
+              <div>
+                <p class="eyebrow">Auto Quantities</p>
+                <h2>Recommended order</h2>
+              </div>
+              <ul id="quantity-preview-list"></ul>
+            </section>
+          </section>
+
+          <p class="form-error" id="form-error" role="alert"></p>
+
+          <button class="primary-action" type="submit">Calculate quote</button>
+        </form>
+
+        <section class="panel results-panel" aria-live="polite">
+          <div id="empty-state" class="empty-state">
+            <h2>Ready for a quote.</h2>
+          </div>
+
+          <div id="results" class="results" hidden>
+            <div class="result-header">
+              <div>
+                <p class="eyebrow" id="result-mode-label">Guest Quote</p>
+                <h2 id="quote-title"></h2>
+              </div>
+              <strong id="quote-total"></strong>
+            </div>
+
+            <section class="guest-summary" id="guest-summary">
+              <p id="guest-summary-copy"></p>
+              <div class="deposit-box">
+                <span>25% deposit to reserve</span>
+                <strong id="deposit-total"></strong>
+              </div>
+              <button class="primary-action request-action" id="request-action" type="button">
+                Ready to move forward
+              </button>
+            </section>
+
+            <section class="admin-only" id="admin-breakdown" hidden>
+              <dl class="quote-lines" id="quote-lines"></dl>
+            </section>
+
+            <p class="pricing-notice admin-only" id="pricing-notice" hidden></p>
+            <p class="disclaimer" id="disclaimer"></p>
+
+            <section class="admin-only" id="admin-details" hidden>
+              <div class="detail-header">
+                <p class="eyebrow" id="detail-eyebrow">Prep</p>
+                <h2 id="detail-title">Details</h2>
+              </div>
+
+              <div class="detail-grid" id="detail-grid"></div>
+            </section>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <dialog class="request-dialog" id="request-dialog">
+      <form class="request-card" id="request-form" method="dialog">
+        <div>
+          <p class="eyebrow">Next Step</p>
+          <h2>Request this quote</h2>
+        </div>
+        <label class="field">
+          <span>Name</span>
+          <input id="request-name" name="name" autocomplete="name" required />
+        </label>
+        <label class="field">
+          <span>Email</span>
+          <input id="request-email" name="email" type="email" autocomplete="email" required />
+        </label>
+        <label class="field">
+          <span>Phone</span>
+          <input id="request-phone" name="phone" autocomplete="tel" />
+        </label>
+        <label class="field">
+          <span>Notes</span>
+          <textarea id="request-notes" name="notes" rows="4"></textarea>
+        </label>
+        <div class="dialog-actions">
+          <button class="secondary-action" id="request-cancel" type="button">Cancel</button>
+          <button class="primary-action" type="submit">Create email request</button>
+        </div>
+      </form>
+    </dialog>
+
+    <script src="/app.js"></script>
+  </body>
+</html>

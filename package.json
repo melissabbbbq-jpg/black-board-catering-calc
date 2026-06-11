@@ -1,0 +1,18 @@
+{
+  "name": "bbq-catering-calculator",
+  "version": "1.0.0",
+  "description": "Basic catering quote and prep calculator for a barbecue business.",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "node --test"
+  },
+  "keywords": [
+    "catering",
+    "barbecue",
+    "quote",
+    "prep"
+  ],
+  "author": "",
+  "license": "MIT"
+}
