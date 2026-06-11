@@ -905,7 +905,8 @@ async function submitRequest(event) {
     closeRequestDialog();
     requestStatusEl.textContent = data.message || "Your quote has been submitted. We will be in touch soon!";
   } catch (error) {
-    requestStatusEl.textContent = error.message;
+    requestStatusEl.textContent =
+      "We could not submit your quote online right now. Please call or email us and we will help right away.";
   } finally {
     submitButton.disabled = false;
     submitButton.textContent = "Submit quote request";

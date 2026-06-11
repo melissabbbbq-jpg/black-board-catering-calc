@@ -46,6 +46,9 @@ Quote requests are sent by the backend through SMTP. Configure these environment
 - `SMTP_FROM`
 - `QUOTE_RECIPIENT_EMAIL`
 
+On Render, open the service dashboard, go to **Environment**, add or fill in those variables, then redeploy the
+service. `SMTP_PASS` should be an app password or SMTP API key from the email provider, not a personal login password.
+
 For local testing without sending real email, set `EMAIL_DELIVERY_MODE=capture`; submissions are written to `data/quote-submissions.json`.
 
 ## Backend Price Management

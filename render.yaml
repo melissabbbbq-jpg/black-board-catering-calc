@@ -10,3 +10,19 @@ services:
         value: 0.0.0.0
       - key: NODE_VERSION
         value: 20
+      - key: EMAIL_DELIVERY_MODE
+        value: smtp
+      - key: QUOTE_RECIPIENT_EMAIL
+        value: melissa@blackboardbarbq.com
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        value: 587
+      - key: SMTP_SECURE
+        value: false
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false
+      - key: SMTP_FROM
+        sync: false
