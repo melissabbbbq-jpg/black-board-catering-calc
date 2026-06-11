@@ -78,6 +78,52 @@ function getMeatOuncesPerGuest(meatCount) {
   return 0;
 }
 
+function getDessertDefaultSize() {
+  const defaultSizeId = calculatorConfig?.aLaCarte?.dessertDefaultContainerSize || "full-tray";
+  return findById(calculatorConfig.aLaCarte.dessertContainerSizes, defaultSizeId);
+}
+
+function getRecommendedQuantity(category, item, guests, selectedMeatCount = getCheckedValues("meats").length) {
+  if (!guests || !item) return 0;
+
+  if (category === "meats") {
+    if (item.unit === "lb") {
+      return Math.ceil((guests * getMeatOuncesPerGuest(selectedMeatCount)) / 16);
+    }
+    return Math.ceil(guests / (item.piecesPerUnit || 1));
+  }
+
+  if (category === "sides") {
+    return Math.ceil((guests * item.ouncesPerGuest) / item.ouncesPerUnit);
+  }
+
+  if (category === "desserts") {
+    const size = getDessertDefaultSize();
+    const portions = Math.ceil(guests * item.portionsPerGuest);
+    return Math.ceil(portions / size.servings);
+  }
+
+  if (category === "beverages") {
+    const servings = Math.ceil(guests * item.servingsPerGuest);
+    return Math.ceil(servings / item.servingsPerUnit);
+  }
+
+  return 0;
+}
+
+function getQuantityUnitLabel(category, item) {
+  if (category === "desserts") return getDessertDefaultSize()?.label || "unit";
+  return item.unitLabel || item.unit || "unit";
+}
+
+function formatRecommendedQuantity(category, item, quantity) {
+  if (category === "meats" && item.unit === "lb") {
+    return `${quantity} lb cooked recommended`;
+  }
+
+  return `${pluralize(quantity, getQuantityUnitLabel(category, item))} recommended`;
+}
+
 function appendText(parent, tagName, text, className) {
   const node = document.createElement(tagName);
   node.textContent = text;
@@ -100,13 +146,13 @@ function renderChoice(containerId, item, inputType, name, checked, meta) {
   const content = document.createElement("span");
   content.className = "choice-content";
   appendText(content, "span", item.label, "choice-name");
-  appendText(content, "span", meta, "choice-meta");
+  if (meta) appendText(content, "span", meta, "choice-meta");
 
   label.append(input, content);
   container.append(label);
 }
 
-function getDefaultUnitPrice(category, item, sizeId = "full-tray") {
+function getDefaultUnitPrice(category, item, sizeId = calculatorConfig?.aLaCarte?.dessertDefaultContainerSize || "full-tray") {
   if (category === "desserts" && item.priceByContainer) {
     return item.priceByContainer[sizeId] || 0;
   }
@@ -143,29 +189,12 @@ function renderAlaCarteItem(containerId, item, category, checked = false) {
   const content = document.createElement("span");
   content.className = "choice-content";
   appendText(content, "span", item.label, "choice-name");
-  appendText(content, "span", getAlaCarteMeta(item, category), "choice-meta");
+  const meta = getAlaCarteMeta(item, category);
+  if (meta) appendText(content, "span", meta, "choice-meta");
   label.append(input, content);
 
   const controls = document.createElement("div");
   controls.className = "item-controls";
-
-  if (category === "desserts") {
-    const sizeLabel = document.createElement("label");
-    sizeLabel.className = "mini-field";
-    appendText(sizeLabel, "span", "Container");
-    const select = document.createElement("select");
-    select.name = `size-${item.id}`;
-    select.dataset.dessertSizeFor = item.id;
-    calculatorConfig.aLaCarte.dessertContainerSizes.forEach((size) => {
-      const option = document.createElement("option");
-      option.value = size.id;
-      option.textContent = `${size.label} (${size.servings})`;
-      option.selected = size.id === "full-tray";
-      select.append(option);
-    });
-    sizeLabel.append(select);
-    controls.append(sizeLabel);
-  }
 
   const quantityLabel = document.createElement("label");
   quantityLabel.className = "mini-field";
@@ -186,9 +215,14 @@ function renderAlaCarteItem(containerId, item, category, checked = false) {
 }
 
 function getAlaCarteMeta(item, category) {
+  if (!isAdminView) return "";
+
   if (category === "meats") return `${item.yieldNote || "Sold by unit"} · ${formatUnitPrice(category, item)}`;
   if (category === "sides") return `${item.ouncesPerGuest} oz/guest · ${formatUnitPrice(category, item)}`;
-  if (category === "desserts") return `${item.portionsPerGuest} serving${item.portionsPerGuest === 1 ? "" : "s"}/guest · priced by container`;
+  if (category === "desserts") {
+    const size = getDessertDefaultSize();
+    return `${item.portionsPerGuest} serving${item.portionsPerGuest === 1 ? "" : "s"}/guest · ${formatUnitPrice(category, item, size.id)}`;
+  }
   return `${item.yieldNote || "Sold by unit"} · ${formatUnitPrice(category, item)}`;
 }
 
@@ -559,6 +593,7 @@ function syncMode() {
     mode === "full-service" ? "Calculate buffet quote" : "Calculate pickup / delivery quote";
   renderPackageSelections();
   updateAlaCarteControls();
+  syncRecommendedQuantities();
   updateQuantityPreview();
 }
 
@@ -567,12 +602,40 @@ function updateAlaCarteControls() {
     const checked = row.querySelector('input[type="checkbox"]').checked;
     row.querySelectorAll(".item-controls input, .item-controls select").forEach((control) => {
       control.disabled = !checked;
+      if (checked && control.dataset.quantityCategory && control.value === "") {
+        delete control.dataset.userEdited;
+      }
     });
   });
 }
 
 function syncDessertPriceDefault(sizeSelect) {
   updateQuantityPreview();
+}
+
+function syncRecommendedQuantities() {
+  if (!calculatorConfig || getActiveMode() !== "a-la-carte") return;
+
+  const guests = getGuestCount();
+  const selectedMeatCount = getCheckedValues("meats").length;
+  form.querySelectorAll("[data-quantity-category]").forEach((quantity) => {
+    if (quantity.disabled || !guests) return;
+
+    const category = quantity.dataset.quantityCategory;
+    const item = findById(calculatorConfig.aLaCarte[category], quantity.dataset.quantityId);
+    const recommendedQuantity = getRecommendedQuantity(category, item, guests, selectedMeatCount);
+    const recommendedValue = String(recommendedQuantity);
+    const canAutoFill =
+      quantity.dataset.userEdited !== "true" ||
+      quantity.value === "" ||
+      quantity.value === quantity.dataset.autoQuantity;
+
+    if (canAutoFill) {
+      quantity.value = recommendedValue;
+      quantity.dataset.autoQuantity = recommendedValue;
+      delete quantity.dataset.userEdited;
+    }
+  });
 }
 
 function handleMeatLimit(event) {
@@ -616,11 +679,6 @@ function validateFullServiceSelections() {
   );
 }
 
-function selectedDessertSize(id) {
-  const select = form.querySelector(`[data-dessert-size-for="${id}"]`);
-  return findById(calculatorConfig.aLaCarte.dessertContainerSizes, select?.value || "full-tray");
-}
-
 function addPreviewLine(title, body) {
   const li = document.createElement("li");
   appendText(li, "strong", title);
@@ -644,38 +702,29 @@ function updateQuantityPreview() {
   }
 
   if (selectedMeatIds.length > 0) {
-    const ounces = getMeatOuncesPerGuest(selectedMeatIds.length);
     selectedMeatIds.forEach((id) => {
       const item = findById(calculatorConfig.aLaCarte.meats, id);
-      if (item.unit === "lb") {
-        const pounds = Math.ceil((guests * ounces) / 16);
-        addPreviewLine(item.label, `${pounds} lb cooked · ${ounces} oz per guest`);
-      } else {
-        const quantity = Math.ceil(guests / (item.piecesPerUnit || 1));
-        addPreviewLine(item.label, `${quantity} ${item.unitLabel || item.unit} · ${item.piecesPerUnit || 1} pieces each`);
-      }
+      const quantity = getRecommendedQuantity("meats", item, guests, selectedMeatIds.length);
+      addPreviewLine(item.label, formatRecommendedQuantity("meats", item, quantity));
     });
   }
 
   selectedSideIds.forEach((id) => {
     const item = findById(calculatorConfig.aLaCarte.sides, id);
-    const quarts = Math.ceil((guests * item.ouncesPerGuest) / item.ouncesPerUnit);
-    addPreviewLine(item.label, `${pluralize(quarts, "quart")} · ${item.ouncesPerGuest} oz per guest`);
+    const quantity = getRecommendedQuantity("sides", item, guests);
+    addPreviewLine(item.label, formatRecommendedQuantity("sides", item, quantity));
   });
 
   selectedDessertIds.forEach((id) => {
     const item = findById(calculatorConfig.aLaCarte.desserts, id);
-    const size = selectedDessertSize(id);
-    const portions = Math.ceil(guests * item.portionsPerGuest);
-    const containers = Math.ceil(portions / size.servings);
-    addPreviewLine(item.label, `${containers} ${size.label} · ${portions} servings`);
+    const quantity = getRecommendedQuantity("desserts", item, guests);
+    addPreviewLine(item.label, formatRecommendedQuantity("desserts", item, quantity));
   });
 
   selectedBeverageIds.forEach((id) => {
     const item = findById(calculatorConfig.aLaCarte.beverages, id);
-    const servings = Math.ceil(guests * item.servingsPerGuest);
-    const gallons = Math.ceil(servings / item.servingsPerUnit);
-    addPreviewLine(item.label, `${pluralize(gallons, "gallon")} · ${servings} servings`);
+    const quantity = getRecommendedQuantity("beverages", item, guests);
+    addPreviewLine(item.label, formatRecommendedQuantity("beverages", item, quantity));
   });
 
   if (quantityPreviewListEl.children.length === 0) {
@@ -725,13 +774,13 @@ function buildRequestSelectionLines(data) {
 
   const itemLines = flattenRequestItems(data.prep).map(
     (item) =>
-      `- ${item.label}: ${item.orderQuantity} ${item.unitLabel || item.unit || item.container?.label || "each"} x ${formatMoney(item.unitPrice)} = ${formatMoney(item.lineTotal)}`
+      `- ${item.label}: ${item.orderQuantity} ${item.unitLabel || item.unit || item.container?.label || "each"}`
   );
 
   return [
     `Pickup/delivery choice: ${data.input.fulfillment.label}`,
     `Percentage add-on: ${Math.round(data.quote.productionFeeRate * 100)}% (${formatMoney(data.quote.productionFee)})`,
-    "Item quantities and prices:",
+    "Item quantities:",
     ...itemLines
   ];
 }
@@ -795,6 +844,14 @@ async function init() {
   syncMode();
   form.addEventListener("change", (event) => {
     handleMeatLimit(event);
+    if (event.target.matches('.item-row input[type="checkbox"]') && event.target.checked) {
+      const row = event.target.closest(".item-row");
+      const quantity = row?.querySelector("[data-quantity-category]");
+      if (quantity) {
+        delete quantity.dataset.userEdited;
+        quantity.value = "";
+      }
+    }
     if (event.target.name === "packageId") {
       renderPackageSelections();
       errorEl.textContent = "";
@@ -802,12 +859,14 @@ async function init() {
     if (event.target.name?.startsWith("package")) {
       errorEl.textContent = "";
     }
-    if (event.target.dataset.dessertSizeFor) {
-      syncDessertPriceDefault(event.target);
-    }
     syncMode();
   });
   form.addEventListener("input", (event) => {
+    if (event.target.dataset.quantityCategory) {
+      event.target.dataset.userEdited = "true";
+    } else {
+      syncRecommendedQuantities();
+    }
     updateQuantityPreview();
   });
   requestActionEl.addEventListener("click", openRequestDialog);

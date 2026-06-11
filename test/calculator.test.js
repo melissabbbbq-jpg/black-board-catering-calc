@@ -1,6 +1,6 @@
 const assert = require("node:assert/strict");
 const test = require("node:test");
-const { calculateQuote, getMeatOuncesPerGuest } = require("../src/calculator");
+const { CONFIG, calculateQuote, getMeatOuncesPerGuest } = require("../src/calculator");
 
 test("calculates a full-service buffet package quote", () => {
   const result = calculateQuote({
@@ -82,18 +82,15 @@ test("calculates pickup and delivery a la carte quantities and quote from unit p
     sides: ["mac-n-cheese", "stone-ground-potato-salad"],
     desserts: ["shortbread-banana-pudding"],
     beverages: ["fresh-lemonade"],
-    dessertSizes: {
-      "shortbread-banana-pudding": "full-tray"
-    },
     quantities: {}
   });
 
   assert.equal(result.mode, "a-la-carte");
-  assert.equal(result.quote.menuSubtotal, 1220);
-  assert.equal(result.quote.productionFee, 366);
-  assert.equal(result.quote.salesTax, 130.85);
-  assert.equal(result.quote.totalQuote, 1716.85);
-  assert.equal(result.quote.deposit, 429.21);
+  assert.equal(result.quote.menuSubtotal, 1206);
+  assert.equal(result.quote.productionFee, 361.8);
+  assert.equal(result.quote.salesTax, 129.34);
+  assert.equal(result.quote.totalQuote, 1697.14);
+  assert.equal(result.quote.deposit, 424.29);
   assert.equal(result.quote.pricingIncomplete, false);
 
   assert.deepEqual(
@@ -123,6 +120,7 @@ test("calculates pickup and delivery a la carte quantities and quote from unit p
   assert.equal(result.prep.sides[0].orderQuantity, 7);
   assert.equal(result.prep.sides[1].orderQuantity, 7);
   assert.equal(result.prep.desserts[0].orderQuantity, 2);
+  assert.equal(result.prep.desserts[0].container.id, "full-tray");
   assert.equal(result.prep.beverages[0].orderQuantity, 4);
 });
 
@@ -140,8 +138,38 @@ test("uses backend prices for a la carte quotes", () => {
 
   assert.equal(result.quote.pricingIncomplete, false);
   assert.equal(result.quote.usesSamplePricing, false);
-  assert.equal(result.quote.menuSubtotal, 358);
-  assert.equal(result.quote.minimumAdjustment, 142);
+  assert.equal(result.quote.menuSubtotal, 366);
+  assert.equal(result.quote.minimumAdjustment, 134);
+});
+
+test("uses updated sides by the quart menu configuration", () => {
+  const sides = CONFIG.aLaCarte.sides;
+
+  assert.equal(sides.some((item) => item.id === "cheesy-hominy-casserole"), false);
+  assert.equal(sides.some((item) => item.id === "garlicky-green-beans"), true);
+  assert.deepEqual([...new Set(sides.map((item) => item.pricePerUnit))], [20]);
+  assert.equal(sides.every((item) => !item.yieldNote.includes("4 oz per guest")), true);
+});
+
+test("calculates dessert defaults and beverage gallons from backend assumptions", () => {
+  const result = calculateQuote({
+    calculatorType: "a-la-carte",
+    eventDate: "2026-07-04",
+    guestCount: 32,
+    fulfillment: "dropoff",
+    meats: ["pulled-pork"],
+    sides: ["garlicky-green-beans"],
+    desserts: ["seasonal-cobbler"],
+    beverages: ["sweet-unsweet-tea"],
+    quantities: {}
+  });
+
+  assert.equal(result.prep.sides[0].unitPrice, 20);
+  assert.equal(result.prep.sides[0].orderQuantity, 4);
+  assert.equal(result.prep.desserts[0].container.id, "full-tray");
+  assert.equal(result.prep.desserts[0].orderQuantity, 1);
+  assert.equal(result.prep.beverages[0].servings, 32);
+  assert.equal(result.prep.beverages[0].orderQuantity, 2);
 });
 
 test("uses quantity overrides without accepting frontend price edits", () => {

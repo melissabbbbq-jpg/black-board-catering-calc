@@ -96,6 +96,7 @@ const CONFIG = {
     dropoffProductionFeeRate: 0.3,
     pickupWeekdayMinimum: 500,
     dropoffMinimum: 500,
+    dessertDefaultContainerSize: "full-tray",
     dessertContainerSizes: [
       {
         id: "quart",
@@ -205,20 +206,9 @@ const CONFIG = {
         unitLabel: "quart",
         ouncesPerGuest: 4,
         ouncesPerUnit: 32,
-        yieldNote: "Sold by the quart. Estimate 4 oz per guest.",
+        yieldNote: "Sold by the quart.",
         active: true,
-        pricePerUnit: 16
-      },
-      {
-        id: "cheesy-hominy-casserole",
-        label: "Cheesy Hominy Casserole",
-        unit: "quart",
-        unitLabel: "quart",
-        ouncesPerGuest: 4,
-        ouncesPerUnit: 32,
-        yieldNote: "Sold by the quart. Estimate 4 oz per guest.",
-        active: true,
-        pricePerUnit: 22
+        pricePerUnit: 20
       },
       {
         id: "charro-beans",
@@ -227,9 +217,9 @@ const CONFIG = {
         unitLabel: "quart",
         ouncesPerGuest: 4,
         ouncesPerUnit: 32,
-        yieldNote: "Sold by the quart. Estimate 4 oz per guest.",
+        yieldNote: "Sold by the quart.",
         active: true,
-        pricePerUnit: 18
+        pricePerUnit: 20
       },
       {
         id: "stone-ground-potato-salad",
@@ -238,9 +228,9 @@ const CONFIG = {
         unitLabel: "quart",
         ouncesPerGuest: 4,
         ouncesPerUnit: 32,
-        yieldNote: "Sold by the quart. Estimate 4 oz per guest.",
+        yieldNote: "Sold by the quart.",
         active: true,
-        pricePerUnit: 18
+        pricePerUnit: 20
       },
       {
         id: "mac-n-cheese",
@@ -249,9 +239,20 @@ const CONFIG = {
         unitLabel: "quart",
         ouncesPerGuest: 4,
         ouncesPerUnit: 32,
-        yieldNote: "Sold by the quart. Estimate 4 oz per guest.",
+        yieldNote: "Sold by the quart.",
         active: true,
-        pricePerUnit: 24
+        pricePerUnit: 20
+      },
+      {
+        id: "garlicky-green-beans",
+        label: "Garlicky Green Beans",
+        unit: "quart",
+        unitLabel: "quart",
+        ouncesPerGuest: 4,
+        ouncesPerUnit: 32,
+        yieldNote: "Sold by the quart.",
+        active: true,
+        pricePerUnit: 20
       }
     ],
     desserts: [
@@ -261,7 +262,7 @@ const CONFIG = {
         unit: "container",
         unitLabel: "container",
         portionsPerGuest: 1,
-        yieldNote: "Sold by selected container size.",
+        yieldNote: "Configured by backend dessert default.",
         active: true,
         priceByContainer: {
           "quart": 18,
@@ -275,7 +276,7 @@ const CONFIG = {
         unit: "container",
         unitLabel: "container",
         portionsPerGuest: 1,
-        yieldNote: "Sold by selected container size.",
+        yieldNote: "Configured by backend dessert default.",
         active: true,
         priceByContainer: {
           "quart": 16,
@@ -289,7 +290,7 @@ const CONFIG = {
         unit: "container",
         unitLabel: "container",
         portionsPerGuest: 1,
-        yieldNote: "Sold by selected container size.",
+        yieldNote: "Configured by backend dessert default.",
         active: true,
         priceByContainer: {
           "quart": 18,
@@ -303,7 +304,7 @@ const CONFIG = {
         unit: "container",
         unitLabel: "container",
         portionsPerGuest: 1.5,
-        yieldNote: "Sold by selected container size.",
+        yieldNote: "Configured by backend dessert default.",
         active: true,
         priceByContainer: {
           "quart": 16,
@@ -317,7 +318,7 @@ const CONFIG = {
         unit: "container",
         unitLabel: "container",
         portionsPerGuest: 1,
-        yieldNote: "Sold by selected container size.",
+        yieldNote: "Configured by backend dessert default.",
         active: true,
         priceByContainer: {
           "quart": 18,
@@ -331,7 +332,7 @@ const CONFIG = {
         unit: "container",
         unitLabel: "container",
         portionsPerGuest: 1,
-        yieldNote: "Sold by selected container size.",
+        yieldNote: "Configured by backend dessert default.",
         active: true,
         priceByContainer: {
           "quart": 18,
@@ -345,7 +346,7 @@ const CONFIG = {
         unit: "container",
         unitLabel: "container",
         portionsPerGuest: 1,
-        yieldNote: "Sold by selected container size.",
+        yieldNote: "Configured by backend dessert default.",
         active: true,
         priceByContainer: {
           "quart": 20,
@@ -708,7 +709,7 @@ function getAlaCarteProductionRate(fulfillmentId) {
   throw new Error("Choose pickup or drop-off.");
 }
 
-function getDefaultUnitPrice(category, item, unitKey) {
+function getDefaultUnitPrice(category, item, unitKey = CONFIG.aLaCarte.dessertDefaultContainerSize) {
   if (category === "desserts" && item.priceByContainer) {
     return item.priceByContainer[unitKey] ?? 0;
   }
@@ -739,7 +740,7 @@ function getQuantityOverride(payload, category, item) {
   return quantity;
 }
 
-function getDessertContainer(sizeId) {
+function getDessertContainer(sizeId = CONFIG.aLaCarte.dessertDefaultContainerSize) {
   const selectedSize = CONFIG.aLaCarte.dessertContainerSizes.find((size) => size.id === sizeId);
   if (!selectedSize) {
     throw new Error("Choose a valid dessert container size.");
@@ -801,7 +802,7 @@ function calculateAlaCartePrep({ guestCount, meats, sides, desserts, beverages, 
       };
     }),
     desserts: desserts.map((dessert) => {
-      const selectedSize = getDessertContainer(payload.dessertSizes?.[dessert.id] || "full-tray");
+      const selectedSize = getDessertContainer(payload.dessertSizes?.[dessert.id]);
       const portions = Math.ceil(guestCount * dessert.portionsPerGuest);
       const recommendedQuantity = Math.ceil(portions / selectedSize.servings);
       const orderQuantity = getQuantityOverride(payload, "desserts", dessert) ?? recommendedQuantity;
