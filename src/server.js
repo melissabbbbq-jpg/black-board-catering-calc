@@ -4,7 +4,7 @@ const path = require("node:path");
 const { CONFIG, calculateQuote } = require("./calculator");
 
 const PORT = Number(process.env.PORT || 3000);
-const HOST = process.env.HOST || "127.0.0.1";
+const HOST = process.env.HOST || "0.0.0.0";
 const publicDir = path.resolve(__dirname, "..", "public");
 
 const contentTypes = {
