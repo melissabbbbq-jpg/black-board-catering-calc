@@ -137,71 +137,89 @@
         "label": "Smoked Prime Brisket",
         "unit": "lb",
         "unitLabel": "lb cooked",
+        "ouncesPerGuest": 5,
         "rawYield": 0.5,
-        "yieldNote": "Sold by the cooked pound.",
+        "yieldNote": "5 oz cooked per guest. Sold by the cooked pound.",
         "active": true,
         "pricePerUnit": 36
       },
       {
-        "id": "pork-spare-ribs",
-        "label": "Pork Spare Ribs",
+        "id": "burnt-ends",
+        "label": "Burnt Ends",
         "unit": "lb",
         "unitLabel": "lb cooked",
-        "rawYield": 0.6,
-        "yieldNote": "Sold by the cooked pound.",
+        "ouncesPerGuest": 2,
+        "yieldNote": "2 oz cooked per guest. Sold by the cooked pound.",
         "active": true,
-        "pricePerUnit": 28
-      },
-      {
-        "id": "whole-smoked-chicken",
-        "label": "Whole Smoked Chicken",
-        "unit": "bird",
-        "unitLabel": "bird",
-        "piecesPerUnit": 8,
-        "yieldNote": "Sold by the bird. Each whole smoked chicken yields 8 pieces.",
-        "active": true,
-        "pricePerUnit": 18,
-        "menuHelperText": "(Each chicken yields 8 pcs)"
+        "pricePerUnit": 38
       },
       {
         "id": "pulled-pork",
         "label": "Pulled Pork",
         "unit": "lb",
         "unitLabel": "lb cooked",
+        "ouncesPerGuest": 3,
         "rawYield": 0.65,
-        "yieldNote": "Sold by the cooked pound.",
-        "active": true,
-        "pricePerUnit": 22
-      },
-      {
-        "id": "garlic-confit-sausage",
-        "label": "Garlic Confit Sausage",
-        "unit": "lb",
-        "unitLabel": "lb cooked",
-        "rawYield": 0.85,
-        "yieldNote": "Sold by the cooked pound.",
+        "yieldNote": "3 oz cooked per guest. Sold by the cooked pound.",
         "active": true,
         "pricePerUnit": 20
       },
       {
-        "id": "jalapeno-cheddar-sausage",
-        "label": "Jalapeno Cheddar Sausage",
+        "id": "pork-spare-ribs",
+        "label": "Pork Spare Ribs",
         "unit": "lb",
         "unitLabel": "lb cooked",
-        "rawYield": 0.85,
-        "yieldNote": "Sold by the cooked pound.",
+        "piecesPerGuest": 1,
+        "piecesPerUnit": 16,
+        "rawYield": 0.6,
+        "yieldNote": "1 piece per guest. Sold by the cooked pound.",
         "active": true,
-        "pricePerUnit": 21
+        "pricePerUnit": 27
+      },
+      {
+        "id": "whole-smoked-chicken",
+        "label": "Whole Smoked Chicken",
+        "unit": "whole-chicken",
+        "unitLabel": "whole chicken",
+        "piecesPerGuest": 1,
+        "piecesPerUnit": 16,
+        "yieldNote": "1 piece per guest. Sold by the whole chicken.",
+        "active": true,
+        "pricePerUnit": 26,
+        "menuHelperText": "(Plan 16 pieces per chicken)"
       },
       {
         "id": "turkey-breast",
         "label": "Turkey Breast",
         "unit": "lb",
         "unitLabel": "lb cooked",
+        "ouncesPerGuest": 3,
         "rawYield": 0.62,
-        "yieldNote": "Sold by the cooked pound.",
+        "yieldNote": "3 oz cooked per guest. Sold by the cooked pound.",
         "active": true,
-        "pricePerUnit": 24
+        "pricePerUnit": 32
+      },
+      {
+        "id": "jalapeno-cheddar-sausage",
+        "label": "Jalapeno Cheddar Link",
+        "unit": "lb",
+        "unitLabel": "lb cooked",
+        "ouncesPerGuest": 1,
+        "rawYield": 0.85,
+        "yieldNote": "1 oz cooked per guest. Sold by the cooked pound.",
+        "active": true,
+        "pricePerUnit": 21
+      },
+      {
+        "id": "garlic-confit-sausage",
+        "label": "Garlic Confit Link",
+        "unit": "lb",
+        "unitLabel": "lb cooked",
+        "ouncesPerGuest": 1,
+        "rawYield": 0.85,
+        "yieldNote": "1 oz cooked per guest. Sold by the cooked pound.",
+        "active": true,
+        "pricePerUnit": 20
       }
     ],
     "sides": [
@@ -229,7 +247,18 @@
       },
       {
         "id": "stone-ground-potato-salad",
-        "label": "Stone Ground Mustard Potato Salad",
+        "label": "Potato Salad",
+        "unit": "quart",
+        "unitLabel": "quart",
+        "ouncesPerGuest": 4,
+        "ouncesPerUnit": 32,
+        "yieldNote": "Sold by the quart.",
+        "active": true,
+        "pricePerUnit": 20
+      },
+      {
+        "id": "sweet-potato-salad",
+        "label": "Sweet Potato Salad",
         "unit": "quart",
         "unitLabel": "quart",
         "ouncesPerGuest": 4,
@@ -265,16 +294,13 @@
       {
         "id": "seasonal-cobbler",
         "label": "Seasonal Cobbler",
-        "unit": "container",
-        "unitLabel": "container",
-        "portionsPerGuest": 1,
-        "yieldNote": "Configured by backend dessert default.",
+        "unit": "quart",
+        "unitLabel": "quart",
+        "ouncesPerGuest": 4,
+        "ouncesPerUnit": 32,
+        "yieldNote": "4 oz per guest. Sold by the quart.",
         "active": true,
-        "priceByContainer": {
-          "quart": 18,
-          "half-tray": 55,
-          "full-tray": 95
-        }
+        "pricePerUnit": 64
       },
       {
         "id": "shortbread-banana-pudding",
@@ -291,32 +317,24 @@
         }
       },
       {
-        "id": "shiner-bock-brownie-bites",
-        "label": "Shiner Bock Caramel Brownie Bites",
-        "unit": "container",
-        "unitLabel": "container",
-        "portionsPerGuest": 1,
-        "yieldNote": "Configured by backend dessert default.",
+        "id": "brownie-bites",
+        "label": "Brownie Bites",
+        "unit": "piece",
+        "unitLabel": "piece",
+        "piecesPerGuest": 1,
+        "yieldNote": "1 piece per guest. Sold by the piece.",
         "active": true,
-        "priceByContainer": {
-          "quart": 18,
-          "half-tray": 45,
-          "full-tray": 80
-        }
+        "pricePerUnit": 2.5
       },
       {
-        "id": "brown-butter-cookies",
-        "label": "Brown Butter, Sea Salt + Chocolate Chip Cookies",
-        "unit": "container",
-        "unitLabel": "container",
-        "portionsPerGuest": 1.5,
-        "yieldNote": "Configured by backend dessert default.",
+        "id": "chocolate-chip-cookies",
+        "label": "Chocolate Chip Cookies",
+        "unit": "piece",
+        "unitLabel": "piece",
+        "piecesPerGuest": 1,
+        "yieldNote": "1 piece per guest. Sold by the piece.",
         "active": true,
-        "priceByContainer": {
-          "quart": 16,
-          "half-tray": 40,
-          "full-tray": 75
-        }
+        "pricePerUnit": 2.5
       },
       {
         "id": "minimalist-carrot-cake-bites",
@@ -333,18 +351,14 @@
         }
       },
       {
-        "id": "buttermilk-pie-bars",
-        "label": "Buttermilk Pie Bars",
-        "unit": "container",
-        "unitLabel": "container",
-        "portionsPerGuest": 1,
-        "yieldNote": "Configured by backend dessert default.",
+        "id": "buttermilk-pie-bites",
+        "label": "Buttermilk Pie Bites",
+        "unit": "piece",
+        "unitLabel": "piece",
+        "piecesPerGuest": 1,
+        "yieldNote": "1 piece per guest. Sold by the piece.",
         "active": true,
-        "priceByContainer": {
-          "quart": 18,
-          "half-tray": 45,
-          "full-tray": 80
-        }
+        "pricePerUnit": 2.5
       },
       {
         "id": "bourbon-bread-pudding",
@@ -385,11 +399,6 @@
         "pricePerUnit": 16
       }
     ],
-    "meatPortionOuncesBySelection": {
-      "1": 8,
-      "2": 5,
-      "3": 4
-    },
     "pickupNoMinimumDays": [
       0,
       5,

@@ -94,13 +94,22 @@ function findById(items, id) {
   return items.find((item) => item.id === id);
 }
 
-function getMeatOuncesPerGuest(meatCount) {
-  const portions = calculatorConfig?.aLaCarte?.meatPortionOuncesBySelection || {};
-  return Number(portions[String(meatCount)] || portions[meatCount] || 0);
-}
-
 function getOuncesPerPound() {
   return calculatorConfig.units.ouncesPerPound;
+}
+
+function getOuncesPerQuart() {
+  return calculatorConfig.units.ouncesPerQuart;
+}
+
+function getItemOuncesPerUnit(item) {
+  if (Number.isFinite(Number(item.ouncesPerUnit)) && Number(item.ouncesPerUnit) > 0) {
+    return Number(item.ouncesPerUnit);
+  }
+
+  if (item.unit === "lb") return getOuncesPerPound();
+  if (item.unit === "quart") return getOuncesPerQuart();
+  return 0;
 }
 
 function getDessertDefaultSize() {
@@ -108,21 +117,35 @@ function getDessertDefaultSize() {
   return findById(calculatorConfig.aLaCarte.dessertContainerSizes, defaultSizeId);
 }
 
-function getRecommendedQuantity(category, item, guests, selectedMeatCount = getCheckedValues("meats").length) {
+function getPortionMeta(item, fallbackOuncesPerGuest = 0) {
+  const ouncesPerGuest = Number(item.ouncesPerGuest || fallbackOuncesPerGuest || 0);
+  const piecesPerGuest = Number(item.piecesPerGuest || 0);
+  const portionsPerGuest = Number(item.portionsPerGuest || 0);
+
+  if (ouncesPerGuest > 0) return `${ouncesPerGuest} oz/guest`;
+  if (piecesPerGuest > 0) return `${piecesPerGuest} pc/guest`;
+  if (portionsPerGuest > 0) {
+    return `${portionsPerGuest} serving${portionsPerGuest === 1 ? "" : "s"}/guest`;
+  }
+  return "Portion pending";
+}
+
+function getRecommendedQuantity(category, item, guests) {
   if (!guests || !item) return 0;
 
-  if (category === "meats") {
-    if (item.unit === "lb") {
-      return roundQuantity((guests * getMeatOuncesPerGuest(selectedMeatCount)) / getOuncesPerPound());
-    }
-    return Math.ceil(guests / (item.piecesPerUnit || 1));
+  const ouncesPerGuest = Number(item.ouncesPerGuest || 0);
+  const piecesPerGuest = Number(item.piecesPerGuest || 0);
+
+  if (ouncesPerGuest > 0) {
+    const ouncesPerUnit = getItemOuncesPerUnit(item);
+    return ouncesPerUnit ? Math.ceil((guests * ouncesPerGuest) / ouncesPerUnit) : 0;
   }
 
-  if (category === "sides") {
-    return Math.ceil((guests * item.ouncesPerGuest) / item.ouncesPerUnit);
+  if (piecesPerGuest > 0) {
+    return Math.ceil(Math.ceil(guests * piecesPerGuest) / (item.piecesPerUnit || 1));
   }
 
-  if (category === "desserts") {
+  if (category === "desserts" && item.priceByContainer) {
     const size = getDessertDefaultSize();
     const portions = Math.ceil(guests * item.portionsPerGuest);
     return Math.ceil(portions / size.servings);
@@ -137,7 +160,7 @@ function getRecommendedQuantity(category, item, guests, selectedMeatCount = getC
 }
 
 function getQuantityUnitLabel(category, item) {
-  if (category === "desserts") return getDessertDefaultSize()?.label || "unit";
+  if (category === "desserts" && item.priceByContainer) return getDessertDefaultSize()?.label || "unit";
   return item.unitLabel || item.unit || "unit";
 }
 
@@ -187,7 +210,10 @@ function getDefaultUnitPrice(category, item, sizeId = calculatorConfig?.aLaCarte
 
 function formatUnitPrice(category, item, sizeId = "full-tray") {
   const unitPrice = getDefaultUnitPrice(category, item, sizeId);
-  const unitLabel = category === "desserts" ? findById(calculatorConfig.aLaCarte.dessertContainerSizes, sizeId)?.label : item.unitLabel || item.unit || "each";
+  const unitLabel =
+    category === "desserts" && item.priceByContainer
+      ? findById(calculatorConfig.aLaCarte.dessertContainerSizes, sizeId)?.label
+      : item.unitLabel || item.unit || "each";
   return unitPrice ? `${formatMoney(unitPrice)} / ${unitLabel}` : "Price pending";
 }
 
@@ -243,11 +269,13 @@ function renderAlaCarteItem(containerId, item, category, checked = false) {
 function getAlaCarteMeta(item, category) {
   if (!isAdminView) return "";
 
-  if (category === "meats") return `${item.yieldNote || "Sold by unit"} · ${formatUnitPrice(category, item)}`;
-  if (category === "sides") return `${item.ouncesPerGuest} oz/guest · ${formatUnitPrice(category, item)}`;
+  if (category === "meats" || category === "sides") {
+    return `${getPortionMeta(item)} · ${formatUnitPrice(category, item)}`;
+  }
+
   if (category === "desserts") {
     const size = getDessertDefaultSize();
-    return `${item.portionsPerGuest} serving${item.portionsPerGuest === 1 ? "" : "s"}/guest · ${formatUnitPrice(category, item, size.id)}`;
+    return `${getPortionMeta(item)} · ${formatUnitPrice(category, item, size.id)}`;
   }
   return `${item.yieldNote || "Sold by unit"} · ${formatUnitPrice(category, item)}`;
 }
@@ -606,7 +634,7 @@ function renderAlaCarteDetails(data) {
       "Desserts",
       prep.desserts.map((item) => ({
         title: item.label,
-        body: `${formatQuantity(item.orderQuantity)} ${item.container.label} · ${item.portions} servings · ${priceSuffix(item)}`
+        body: `${formatQuantity(item.orderQuantity)} ${item.unitLabel || item.unit} · ${item.portion} · ${priceSuffix(item)}`
       }))
     ),
     createDetailSection(
@@ -739,13 +767,12 @@ function syncRecommendedQuantities() {
   if (!calculatorConfig || getActiveMode() !== "a-la-carte") return;
 
   const guests = getGuestCount();
-  const selectedMeatCount = getCheckedValues("meats").length;
   form.querySelectorAll("[data-quantity-category]").forEach((quantity) => {
     if (quantity.disabled || !guests) return;
 
     const category = quantity.dataset.quantityCategory;
     const item = findById(calculatorConfig.aLaCarte[category], quantity.dataset.quantityId);
-    const recommendedQuantity = getRecommendedQuantity(category, item, guests, selectedMeatCount);
+    const recommendedQuantity = getRecommendedQuantity(category, item, guests);
     const recommendedValue = formatQuantity(recommendedQuantity);
     const canAutoFill =
       quantity.dataset.userEdited !== "true" ||

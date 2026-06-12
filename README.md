@@ -88,18 +88,17 @@ For spreadsheet uploads or bulk menu updates, use one row per menu item with the
 - Drop-off production fee is 30%.
 - Drop-off has a $500 food and beverage minimum.
 - Pickup/delivery item prices are managed in backend config and are not visible or editable by guests.
-- Dessert prices use the backend default full-tray container size unless config is updated.
-- Smoked meats are quoted by their configured unit type, such as cooked pound or bird. Whole smoked chicken is sold by the bird, with 8 pieces per bird.
+- Some dessert prices use the backend default full-tray container size; Excel-priced a la carte desserts can also be sold by quart or piece.
+- Smoked meats are quoted by their configured unit type, such as cooked pound or whole chicken. Whole smoked chicken is sold by the whole chicken, with 16 planned pieces per chicken.
 - Sides by the Quart are quoted at $20 per quart in backend config.
 - Beverages are quoted by gallon, using 16 servings per gallon.
 
 ## Quantity Rules
 
-- Meat portions:
-  - 1 meat: 8 oz cooked per guest
-  - 2 meats: 5 oz cooked per guest per meat
-  - 3 meats: 4 oz cooked per guest per meat
+- A la carte meats use each item's own portion rule, regardless of how many meats are selected.
+- Brisket uses 5 oz cooked per guest; Burnt Ends use 2 oz; Pulled Pork and Turkey Breast use 3 oz each; sausage links use 1 oz each.
+- Pork Spare Ribs and Whole Smoked Chicken use 1 piece per guest, converted to the configured sellable unit.
 - Sides use each item's ounces-per-guest rule.
-- Desserts use each item's portions-per-guest rule and the backend default dessert size.
+- Desserts use each item's configured unit: quart, piece, or backend default dessert container.
 - Beverages use 16 servings per gallon.
-- Auto-populated quantity values display in `.00` or `.50` increments.
+- Auto-populated quantity values round up to the sellable unit.

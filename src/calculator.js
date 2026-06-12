@@ -95,17 +95,55 @@ function requireGuestCount(guestCount) {
   }
 }
 
-function getMeatOuncesPerGuest(meatCount) {
-  const portions = CONFIG.aLaCarte.meatPortionOuncesBySelection || {};
-  return Number(portions[String(meatCount)] || portions[meatCount] || 0);
-}
-
 function getOuncesPerPound() {
   return CONFIG.units.ouncesPerPound;
 }
 
 function getOuncesPerQuart() {
   return CONFIG.units.ouncesPerQuart;
+}
+
+function getItemOuncesPerUnit(item) {
+  if (Number.isFinite(Number(item.ouncesPerUnit)) && Number(item.ouncesPerUnit) > 0) {
+    return Number(item.ouncesPerUnit);
+  }
+
+  if (item.unit === "lb") return getOuncesPerPound();
+  if (item.unit === "quart") return getOuncesPerQuart();
+  return 0;
+}
+
+function getRecommendedOrderQuantity({ guestCount, item, fallbackOuncesPerGuest = 0 }) {
+  const ouncesPerGuest = Number(item.ouncesPerGuest || fallbackOuncesPerGuest || 0);
+  const piecesPerGuest = Number(item.piecesPerGuest || 0);
+
+  if (ouncesPerGuest > 0) {
+    const ouncesPerUnit = getItemOuncesPerUnit(item);
+    if (!ouncesPerUnit) {
+      throw new Error(`Set a valid unit size for ${item.label}.`);
+    }
+    return Math.ceil((guestCount * ouncesPerGuest) / ouncesPerUnit);
+  }
+
+  if (piecesPerGuest > 0) {
+    const totalPieces = Math.ceil(guestCount * piecesPerGuest);
+    return Math.ceil(totalPieces / (item.piecesPerUnit || 1));
+  }
+
+  return 0;
+}
+
+function getAlaCartePortionLabel(item, fallbackOuncesPerGuest = 0) {
+  const ouncesPerGuest = Number(item.ouncesPerGuest || fallbackOuncesPerGuest || 0);
+  const piecesPerGuest = Number(item.piecesPerGuest || 0);
+  const portionsPerGuest = Number(item.portionsPerGuest || 0);
+
+  if (ouncesPerGuest > 0) return `${ouncesPerGuest} oz per guest`;
+  if (piecesPerGuest > 0) return `${piecesPerGuest} pc per guest`;
+  if (portionsPerGuest > 0) {
+    return `${portionsPerGuest} serving${portionsPerGuest === 1 ? "" : "s"} per guest`;
+  }
+  return "Portion pending";
 }
 
 function getProductionMath({ subtotal, minimum = 0, extraFee = 0, productionFeeRate }) {
@@ -451,14 +489,12 @@ function getDessertContainer(sizeId = CONFIG.aLaCarte.dessertDefaultContainerSiz
 }
 
 function calculateAlaCartePrep({ guestCount, meats, sides, desserts, beverages, payload }) {
-  const cookedOuncesPerGuest = getMeatOuncesPerGuest(meats.length);
-
   return {
     meats: meats.map((meat) => {
-      const cookedOunces = guestCount * cookedOuncesPerGuest;
-      const recommendedCookedPounds = cookedOunces / getOuncesPerPound();
-      const recommendedQuantity =
-        meat.unit === "lb" ? roundQuantity(recommendedCookedPounds) : Math.ceil(guestCount / (meat.piecesPerUnit || 1));
+      const recommendedQuantity = getRecommendedOrderQuantity({
+        guestCount,
+        item: meat
+      });
       const orderQuantity = getQuantityOverride(payload, "meats", meat) ?? recommendedQuantity;
       const cookedPounds = meat.unit === "lb" ? orderQuantity : null;
       const rawPounds = meat.rawYield ? cookedPounds / meat.rawYield : null;
@@ -469,10 +505,7 @@ function calculateAlaCartePrep({ guestCount, meats, sides, desserts, beverages, 
         label: meat.label,
         unit: meat.unit,
         unitLabel: meat.unitLabel,
-        portion:
-          meat.unit === "lb"
-            ? `${cookedOuncesPerGuest} oz cooked per guest`
-            : `${meat.piecesPerUnit || 1} pieces per ${meat.unitLabel || meat.unit}`,
+        portion: getAlaCartePortionLabel(meat),
         cookedPounds: cookedPounds === null ? null : roundQuantity(cookedPounds),
         recommendedQuantity,
         orderQuantity,
@@ -485,7 +518,7 @@ function calculateAlaCartePrep({ guestCount, meats, sides, desserts, beverages, 
     }),
     sides: sides.map((side) => {
       const totalOunces = guestCount * side.ouncesPerGuest;
-      const recommendedQuantity = Math.ceil(totalOunces / side.ouncesPerUnit);
+      const recommendedQuantity = getRecommendedOrderQuantity({ guestCount, item: side });
       const orderQuantity = getQuantityOverride(payload, "sides", side) ?? recommendedQuantity;
       const unitPrice = getUnitPrice(payload, "sides", side);
 
@@ -493,7 +526,8 @@ function calculateAlaCartePrep({ guestCount, meats, sides, desserts, beverages, 
         id: side.id,
         label: side.label,
         unit: side.unit,
-        portion: `${side.ouncesPerGuest} oz per guest`,
+        unitLabel: side.unitLabel,
+        portion: getAlaCartePortionLabel(side),
         totalOunces: roundQuantity(totalOunces),
         totalPounds: roundQuantity(totalOunces / getOuncesPerPound()),
         recommendedQuantity,
@@ -503,19 +537,26 @@ function calculateAlaCartePrep({ guestCount, meats, sides, desserts, beverages, 
       };
     }),
     desserts: desserts.map((dessert) => {
-      const selectedSize = getDessertContainer(payload.dessertSizes?.[dessert.id]);
-      const portions = Math.ceil(guestCount * dessert.portionsPerGuest);
-      const recommendedQuantity = Math.ceil(portions / selectedSize.servings);
+      const selectedSize = dessert.priceByContainer ? getDessertContainer(payload.dessertSizes?.[dessert.id]) : null;
+      const portions = selectedSize ? Math.ceil(guestCount * dessert.portionsPerGuest) : null;
+      const pieces = dessert.piecesPerGuest ? Math.ceil(guestCount * dessert.piecesPerGuest) : null;
+      const totalOunces = dessert.ouncesPerGuest ? Math.ceil(guestCount * dessert.ouncesPerGuest) : null;
+      const recommendedQuantity = selectedSize
+        ? Math.ceil(portions / selectedSize.servings)
+        : getRecommendedOrderQuantity({ guestCount, item: dessert });
       const orderQuantity = getQuantityOverride(payload, "desserts", dessert) ?? recommendedQuantity;
-      const unitPrice = getUnitPrice(payload, "desserts", dessert, selectedSize.id);
+      const unitPrice = getUnitPrice(payload, "desserts", dessert, selectedSize?.id);
 
       return {
         id: dessert.id,
         label: dessert.label,
-        portion: `${dessert.portionsPerGuest} serving${dessert.portionsPerGuest === 1 ? "" : "s"} per guest`,
+        unit: dessert.unit,
+        portion: getAlaCartePortionLabel(dessert),
         portions,
+        pieces,
+        totalOunces,
         container: selectedSize,
-        unitLabel: selectedSize.label,
+        unitLabel: selectedSize?.label || dessert.unitLabel || dessert.unit,
         recommendedQuantity,
         orderQuantity,
         unitPrice: roundCurrency(unitPrice),
@@ -700,6 +741,5 @@ module.exports = {
   resetCalculatorConfig,
   calculateQuote,
   calculateFullServiceQuote,
-  calculateAlaCarteQuote,
-  getMeatOuncesPerGuest
+  calculateAlaCarteQuote
 };
