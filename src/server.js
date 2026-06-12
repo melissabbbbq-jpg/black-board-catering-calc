@@ -50,6 +50,14 @@ function readRequestBody(request) {
 }
 
 async function handleApi(request, response, pathname) {
+  if (request.method === "GET" && pathname === "/api/health") {
+    sendJson(response, 200, {
+      status: "ok",
+      service: "bbq-catering-calculator"
+    });
+    return true;
+  }
+
   if (request.method === "GET" && pathname === "/api/config") {
     sendJson(response, 200, getCurrentConfig());
     return true;

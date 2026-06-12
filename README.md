@@ -33,6 +33,11 @@ or, without npm:
 node --test
 ```
 
+## Deploy
+
+This app is configured for Render with `render.yaml`. See [DEPLOYMENT.md](DEPLOYMENT.md) for the full admin UI,
+settings, deployment, update, and redeploy runbook.
+
 ## Guest Request Flow
 
 Guests enter contact details, event type, optional event date, guest count, package or menu selections, service choice, and quantities before calculating a quote. Pickup/delivery quantities auto-populate from backend recommendations and remain editable by guests. They can click `Ready to move forward` after calculating a quote, submit the request in-app, and see: `Your quote has been submitted. We will be in touch soon!`
