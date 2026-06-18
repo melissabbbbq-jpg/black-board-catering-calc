@@ -79,13 +79,15 @@
       {
         "id": "offsite",
         "label": "Full service Catering at the venue of your choice",
+        "description": "Recommended Food & Beverage minimum of $2000",
         "foodBeverageMinimum": 2000,
         "rentalFee": 0,
         "note": "Labor is estimated after event details. Plan starts at 1 team member per 25 guests."
       },
       {
         "id": "restaurant-buyout",
-        "label": "Host your exclusive event at Blackboard",
+        "label": "Host your exclusive event at Black Board Bar-B-Q",
+        "description": "Food and beverage minimum of $1200 and three hour minimum rental starting at $1050.",
         "foodBeverageMinimum": 1200,
         "rentalFee": 1050,
         "rentalLabel": "3-hour restaurant rental",
@@ -93,7 +95,7 @@
       },
       {
         "id": "large-party-reservation",
-        "label": "Large party reservation at Blackboard",
+        "label": "Large party reservation at Black Board Bar-B-Q",
         "description": "For guests of 35 or less.",
         "foodBeverageMinimum": 0,
         "rentalFee": 0,
@@ -139,7 +141,7 @@
       },
       {
         "id": "large-party-reservation",
-        "label": "Large party reservation at Blackboard",
+        "label": "Large party reservation at Black Board Bar-B-Q",
         "description": "For guests of 35 or less.",
         "menuVisible": false,
         "minimum": 0,

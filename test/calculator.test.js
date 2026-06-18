@@ -205,7 +205,7 @@ test("calculates large party reservations from a la carte items without pickup o
   });
 
   assert.equal(result.mode, "a-la-carte");
-  assert.equal(result.input.fulfillment.label, "Large party reservation at Blackboard");
+  assert.equal(result.input.fulfillment.label, "Large party reservation at Black Board Bar-B-Q");
   assert.equal(result.quote.menuSubtotal, 140);
   assert.equal(result.quote.minimum, 0);
   assert.equal(result.quote.productionFee, 0);
