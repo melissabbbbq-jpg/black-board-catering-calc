@@ -96,7 +96,7 @@
       {
         "id": "large-party-reservation",
         "label": "Large Party Reservation at Black Board Bar-B-Q",
-        "description": "For groups of 35 guests or fewer, our Large Party Reservations offer a relaxed, family-style dining experience right here at Black Board Bar-B-Q.",
+        "description": "Intended for groups of 35 guests or fewer and typically served family-style.",
         "foodBeverageMinimum": 0,
         "rentalFee": 0,
         "note": "Large party reservations are calculated from the a la carte menu."
@@ -142,7 +142,7 @@
       {
         "id": "large-party-reservation",
         "label": "Large Party Reservation at Black Board Bar-B-Q",
-        "description": "For groups of 35 guests or fewer, our Large Party Reservations offer a relaxed, family-style dining experience right here at Black Board Bar-B-Q.",
+        "description": "Intended for groups of 35 guests or fewer and typically served family-style.",
         "menuVisible": false,
         "minimum": 0,
         "productionFeeRate": 0,
