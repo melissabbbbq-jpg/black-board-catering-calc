@@ -203,7 +203,7 @@ test("calculates dessert defaults and beverage gallons from backend assumptions"
     meats: ["pulled-pork"],
     sides: ["garlicky-green-beans"],
     desserts: ["seasonal-cobbler"],
-    beverages: ["sweet-unsweet-tea"],
+    beverages: ["sweet-tea"],
     quantities: {}
   });
 

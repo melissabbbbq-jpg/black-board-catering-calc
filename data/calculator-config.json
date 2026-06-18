@@ -123,7 +123,7 @@
       {
         "id": "pickup",
         "label": "Large pick-up",
-        "description": "Best for 20-50 guests. No minimum Friday-Sunday; $500 minimum Monday-Thursday."
+        "description": ""
       },
       {
         "id": "dropoff",
@@ -186,7 +186,7 @@
         "yieldNote": "1 piece per guest. Sold by the whole chicken.",
         "active": true,
         "pricePerUnit": 26,
-        "menuHelperText": "(Plan 16 pieces per chicken)"
+        "menuHelperText": "(8 pieces)"
       },
       {
         "id": "turkey-breast",
@@ -377,8 +377,19 @@
     ],
     "beverages": [
       {
-        "id": "sweet-unsweet-tea",
-        "label": "Sweet & Unsweet Tea",
+        "id": "sweet-tea",
+        "label": "Sweet Tea",
+        "unit": "gallon",
+        "unitLabel": "gallon",
+        "servingsPerGuest": 1,
+        "servingsPerUnit": 16,
+        "yieldNote": "Sold by the gallon.",
+        "active": true,
+        "pricePerUnit": 12
+      },
+      {
+        "id": "unsweet-tea",
+        "label": "Unsweet Tea",
         "unit": "gallon",
         "unitLabel": "gallon",
         "servingsPerGuest": 1,
