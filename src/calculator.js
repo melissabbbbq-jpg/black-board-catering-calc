@@ -612,10 +612,6 @@ function calculateAlaCarteQuote(payload = {}) {
     throw new Error("Select at least one smoked meat.");
   }
 
-  if (meatIds.length > CONFIG.aLaCarte.maxMeats) {
-    throw new Error(`Select no more than ${CONFIG.aLaCarte.maxMeats} smoked meats for auto-portions.`);
-  }
-
   if (sideIds.length < 1) {
     throw new Error("Select at least one side.");
   }

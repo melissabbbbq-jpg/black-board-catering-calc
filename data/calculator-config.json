@@ -104,7 +104,6 @@
   },
   "aLaCarte": {
     "usesSamplePricing": false,
-    "maxMeats": 3,
     "pickupProductionFeeRate": 0.2,
     "dropoffProductionFeeRate": 0.3,
     "pickupWeekdayMinimum": 500,

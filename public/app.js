@@ -308,7 +308,7 @@ function renderPackageChoiceGroup(title, items, name, requiredCount) {
   const grid = document.createElement("div");
   grid.className = "choice-grid package-option-grid";
   items.forEach((item) => {
-    renderChoiceNode(grid, item, requiredCount === 1 ? "radio" : "checkbox", name, false, item.yieldNote || "");
+    renderChoiceNode(grid, item, requiredCount === 1 ? "radio" : "checkbox", name, false);
   });
   section.append(grid);
   packageSelectionsEl.append(section);
@@ -809,18 +809,6 @@ function syncRecommendedQuantities() {
   });
 }
 
-function handleMeatLimit(event) {
-  if (event.target.name !== "meats" || !event.target.checked) return;
-
-  const selectedMeats = getCheckedValues("meats");
-  if (selectedMeats.length > calculatorConfig.aLaCarte.maxMeats) {
-    event.target.checked = false;
-    errorEl.textContent = `Choose up to ${calculatorConfig.aLaCarte.maxMeats} smoked meats for auto-portions.`;
-  } else {
-    errorEl.textContent = "";
-  }
-}
-
 function countChecked(name) {
   return getCheckedValues(name).length;
 }
@@ -996,7 +984,6 @@ async function init() {
   renderMenu(calculatorConfig);
   syncMode();
   form.addEventListener("change", (event) => {
-    handleMeatLimit(event);
     if (event.target.matches('.item-row input[type="checkbox"]') && event.target.checked) {
       const row = event.target.closest(".item-row");
       const quantity = row?.querySelector("[data-quantity-category]");

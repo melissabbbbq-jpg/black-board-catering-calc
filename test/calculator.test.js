@@ -114,6 +114,32 @@ test("uses fixed per-item meat portions for a la carte selections", () => {
   assert.equal(result.quote.menuSubtotal, 1236);
 });
 
+test("allows more than three a la carte meat selections", () => {
+  const result = calculateQuote({
+    calculatorType: "a-la-carte",
+    eventDate: "2026-07-04",
+    guestCount: 20,
+    fulfillment: "dropoff",
+    meats: [
+      "smoked-prime-brisket",
+      "pulled-pork",
+      "turkey-breast",
+      "pork-spare-ribs"
+    ],
+    sides: ["charro-beans"],
+    desserts: [],
+    beverages: []
+  });
+
+  assert.deepEqual(result.selections.meats, [
+    "Smoked Prime Brisket",
+    "Pulled Pork",
+    "Turkey Breast",
+    "Pork Spare Ribs"
+  ]);
+  assert.equal(result.prep.meats.length, 4);
+});
+
 test("calculates pickup and delivery a la carte quantities and quote from unit prices", () => {
   const result = calculateQuote({
     calculatorType: "a-la-carte",
