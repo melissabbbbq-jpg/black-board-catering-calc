@@ -2,10 +2,10 @@
 
 Minimal MVP for two quote paths:
 
-- Full-service buffet packages from the full-service catering menu.
-- Pickup / delivery a la carte ordering from the bulk catering menu.
+- Full-Service Offerings from the full-service catering menu.
+- Pickup / Delivery a la carte ordering from the bulk catering menu.
 
-The public guest view shows a clean total quote and a move-forward request form. The internal admin view is available at `/admin` and shows quote breakdowns plus prep quantities.
+The public guest view shows a clean estimate, PDF download, and planning request form. The internal admin view is available at `/admin` and shows quote breakdowns plus prep quantities.
 
 ## Run
 
@@ -40,9 +40,9 @@ settings, deployment, update, and redeploy runbook.
 
 ## Guest Request Flow
 
-Guests enter contact details, event type, optional event date, guest count, package or menu selections, service choice, and quantities before calculating a quote. Pickup/delivery quantities auto-populate from backend recommendations and remain editable by guests. They can click `Ready to move forward` after calculating a quote, submit the request in-app, and see: `Your quote has been submitted. We will be in touch soon!`
+Guests enter contact details, event type, optional event date, guest count, package or menu selections, service choice, and quantities before calculating an estimate. Pickup/Delivery quantities auto-populate from backend recommendations and remain editable by guests. They can download a PDF estimate or click `Let's Start Planning` to request follow-up without placing an order or making a payment.
 
-Quote requests are sent by the backend through SMTP. Configure these environment variables in production:
+Quote requests are sent by the backend through SMTP. Messages originate from `melissa@blackboardbarbq.com`, go to the prospective client, and copy `melissa.bbbbq@gmail.com`. Configure these environment variables in production:
 
 - `SMTP_HOST`
 - `SMTP_PORT`
@@ -50,6 +50,7 @@ Quote requests are sent by the backend through SMTP. Configure these environment
 - `SMTP_PASS`
 - `SMTP_FROM`
 - `QUOTE_RECIPIENT_EMAIL`
+- `QUOTE_COPY_EMAIL`
 
 On Render, open the service dashboard, go to **Environment**, add or fill in those variables, then redeploy the
 service. `SMTP_PASS` should be an app password or SMTP API key from the email provider, not a personal login password.
@@ -76,7 +77,7 @@ For spreadsheet uploads or bulk menu updates, use one row per menu item with the
   - The Whole Dang Barn: exactly 4 meats, 4 sides, and 1 dessert.
 - Off-site full service has a $2,000 food and beverage minimum.
 - Restaurant buy-out has a $1,200 food and beverage minimum plus a $1,050 starting rental fee.
-- Large party reservations at Black Board Bar-B-Q show the a la carte menu and calculate from selected bulk menu items.
+- Large Party Reservations at Black Board Bar-B-Q show the a la carte menu and calculate from selected bulk menu items.
 - Production fee is 30%.
 - Sales tax is 8.25%.
 - Deposit is 25% to reserve, collected after follow-up rather than through the app.

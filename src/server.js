@@ -8,6 +8,7 @@ const {
   saveCalculatorConfig
 } = require("./calculator");
 const { sendQuoteRequest } = require("./quote-mailer");
+const { buildQuotePdf } = require("./quote-pdf");
 
 const PORT = Number(process.env.PORT || 3000);
 const HOST = process.env.HOST || "0.0.0.0";
@@ -27,6 +28,15 @@ function sendJson(response, statusCode, body) {
     "Content-Type": "application/json; charset=utf-8"
   });
   response.end(JSON.stringify(body));
+}
+
+function sendPdf(response, filename, pdfBuffer) {
+  response.writeHead(200, {
+    "Content-Type": "application/pdf",
+    "Content-Disposition": `attachment; filename="${filename}"`,
+    "Content-Length": pdfBuffer.length
+  });
+  response.end(pdfBuffer);
 }
 
 function readRequestBody(request) {
@@ -103,6 +113,21 @@ async function handleApi(request, response, pathname) {
     return true;
   }
 
+  if (request.method === "POST" && pathname === "/api/quote-pdf") {
+    try {
+      const rawBody = await readRequestBody(request);
+      const payload = rawBody ? JSON.parse(rawBody) : {};
+      const quoteData = calculateQuote(payload.quotePayload || payload || {});
+      sendPdf(response, "black-board-bar-b-q-quote-estimate.pdf", buildQuotePdf(quoteData));
+    } catch (error) {
+      sendJson(response, 400, {
+        error: error.message || "Unable to create quote PDF."
+      });
+    }
+
+    return true;
+  }
+
   if (request.method === "POST" && pathname === "/api/quote-request") {
     try {
       const rawBody = await readRequestBody(request);
@@ -116,7 +141,7 @@ async function handleApi(request, response, pathname) {
       });
 
       sendJson(response, 200, {
-        message: "Your quote has been submitted. We will be in touch soon!",
+        message: "Thank you. Our team will be in touch soon to discuss your event.",
         delivery: result.mode
       });
     } catch (error) {

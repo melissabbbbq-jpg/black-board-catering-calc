@@ -12,7 +12,7 @@
         <p class="eyebrow" id="view-eyebrow">Black Board Bar-B-Q</p>
         <h1>Catering Quote Calculator</h1>
         <p class="calculator-disclaimer">
-          Disclaimer: This quote calculator is intended as a budgeting and quantity recommendation tool. While we
+          This quote calculator is intended as a budgeting and quantity recommendation tool. While we
           strive for accuracy, all values are estimates and are not final. Additional factors may affect the final
           cost.
         </p>
@@ -22,11 +22,11 @@
         <div class="admin-database-header">
           <div>
             <p class="eyebrow">Database Editor</p>
-            <h2>Calculator values</h2>
+            <h2>Calculator Values</h2>
           </div>
           <div class="admin-database-actions">
-            <button class="secondary-action" id="config-reset" type="button">Reset defaults</button>
-            <button class="primary-action" id="config-save" type="button">Save values</button>
+            <button class="secondary-action" id="config-reset" type="button">Reset Defaults</button>
+            <button class="primary-action" id="config-save" type="button">Save Values</button>
           </div>
         </div>
         <p class="admin-database-help">
@@ -44,7 +44,7 @@
       <section class="workspace" aria-label="Catering calculator">
         <form class="panel form-panel" id="quote-form">
           <fieldset>
-            <legend>Contact information</legend>
+            <legend>Contact Information</legend>
             <div class="field-grid">
               <label class="field">
                 <span>Name</span>
@@ -52,27 +52,27 @@
               </label>
 
               <label class="field">
-                <span>Phone number</span>
+                <span>Phone Number</span>
                 <input id="guest-phone" name="guestPhone" autocomplete="tel" required />
               </label>
 
               <label class="field">
-                <span>Email address</span>
+                <span>Email Address</span>
                 <input id="guest-email" name="guestEmail" type="email" autocomplete="email" required />
               </label>
 
               <label class="field">
-                <span>Nature of event</span>
+                <span>Nature of Event</span>
                 <input id="event-type" name="eventType" placeholder="Wedding, corporate lunch, birthday..." required />
               </label>
 
               <label class="field">
-                <span>Event date</span>
+                <span>Event Date</span>
                 <input id="event-date" name="eventDate" type="date" />
               </label>
 
               <label class="field">
-                <span>Guest count</span>
+                <span>Guest Count</span>
                 <input
                   id="guest-count"
                   name="guestCount"
@@ -92,14 +92,14 @@
               <label class="mode-choice">
                 <input type="radio" name="calculatorType" value="full-service" checked />
                 <span>
-                  <strong>Full-service buffet</strong>
+                  <strong>Full-Service Offerings</strong>
                   <small>Package price per guest</small>
                 </span>
               </label>
               <label class="mode-choice">
                 <input type="radio" name="calculatorType" value="a-la-carte" />
                 <span>
-                  <strong>Pickup / delivery</strong>
+                  <strong>Pickup / Delivery</strong>
                   <small>Bulk a la carte quantities</small>
                 </span>
               </label>
@@ -107,25 +107,25 @@
           </fieldset>
 
           <fieldset id="event-type-fieldset">
-            <legend>Event type</legend>
+            <legend>Event Type</legend>
             <div class="choice-grid" id="venue-types"></div>
           </fieldset>
 
           <section class="calculator-panel" data-calculator-panel="full-service">
             <fieldset>
-              <legend>Buffet package</legend>
+              <legend>Buffet Package</legend>
               <div class="choice-grid package-grid" id="full-service-packages"></div>
             </fieldset>
 
             <fieldset>
-              <legend>Package selections</legend>
+              <legend>Package Selections</legend>
               <div class="package-selections" id="package-selections"></div>
             </fieldset>
           </section>
 
           <section class="calculator-panel" data-calculator-panel="a-la-carte" hidden>
             <fieldset id="fulfillment-fieldset">
-              <legend>Pickup or delivery</legend>
+              <legend>Pickup or Delivery</legend>
               <p class="choice-help fulfillment-help">
                 Best for parties of 20 to 50 guests. No minimum Friday through Sunday; $500 minimum Monday through
                 Thursday.
@@ -156,7 +156,7 @@
             <section class="quantity-preview" aria-live="polite">
               <div>
                 <p class="eyebrow">Auto Quantities</p>
-                <h2>Recommended order</h2>
+                <h2>Recommended Order</h2>
               </div>
               <p class="quantity-disclaimer">
                 Auto-populated quantities are recommendations based on our previous experience serving similar events.
@@ -170,12 +170,12 @@
 
           <p class="form-error" id="form-error" role="alert"></p>
 
-          <button class="primary-action" type="submit">Calculate quote</button>
+          <button class="primary-action" type="submit">Calculate Quote</button>
         </form>
 
         <section class="panel results-panel" aria-live="polite">
           <div id="empty-state" class="empty-state">
-            <h2>Ready for a quote.</h2>
+            <h2>Ready for a Quote.</h2>
           </div>
 
           <div id="results" class="results" hidden>
@@ -190,19 +190,32 @@
             <section class="guest-summary" id="guest-summary">
               <p id="guest-summary-copy"></p>
               <div class="deposit-box">
-                <span>Deposit to reserve</span>
+                <span>Deposit to Reserve</span>
                 <strong id="deposit-total"></strong>
               </div>
               <section class="draft-invoice" id="draft-invoice">
                 <div>
                   <p class="eyebrow">Draft Invoice</p>
-                  <h3>Selected items</h3>
+                  <h3>Selected Items</h3>
                 </div>
                 <dl class="invoice-lines" id="invoice-items"></dl>
                 <dl class="invoice-lines invoice-summary" id="invoice-summary"></dl>
               </section>
+              <button class="secondary-action" id="pdf-action" type="button">Download PDF</button>
+              <p class="submission-disclaimer">
+                This estimate is for planning purposes only. Submitting your quote does not reserve your date or
+                require payment.
+              </p>
+              <p class="submission-disclaimer">
+                By clicking &ldquo;Let&rsquo;s Start Planning,&rdquo; you&rsquo;re letting our team know you&rsquo;d like to discuss
+                your event. We&rsquo;ll be in touch soon to confirm availability, answer questions, and guide you through
+                the booking process.
+              </p>
+              <p class="submission-disclaimer">
+                A 25% deposit is required later to officially reserve your event date.
+              </p>
               <button class="primary-action request-action" id="request-action" type="button">
-                Ready to move forward
+                Let&rsquo;s Start Planning
               </button>
               <p class="request-status" id="request-status" role="status"></p>
             </section>
@@ -231,14 +244,14 @@
       <form class="request-card" id="request-form" method="dialog">
         <div>
           <p class="eyebrow">Next Step</p>
-          <h2>Request this quote</h2>
+          <h2>Let&rsquo;s Start Planning</h2>
         </div>
         <label class="field">
           <span>Name</span>
           <input id="request-name" name="name" autocomplete="name" required />
         </label>
         <label class="field">
-          <span>Email</span>
+          <span>Email Address</span>
           <input id="request-email" name="email" type="email" autocomplete="email" required />
         </label>
         <label class="field">
@@ -249,9 +262,18 @@
           <span>Notes</span>
           <textarea id="request-notes" name="notes" rows="4"></textarea>
         </label>
+        <p class="submission-disclaimer">
+          This estimate is for planning purposes only. Submitting your quote does not reserve your date or require
+          payment.
+        </p>
+        <p class="submission-disclaimer">
+          By clicking &ldquo;Let&rsquo;s Start Planning,&rdquo; you&rsquo;re letting our team know you&rsquo;d like to discuss your event.
+          We&rsquo;ll be in touch soon to confirm availability, answer questions, and guide you through the booking process.
+        </p>
+        <p class="submission-disclaimer">A 25% deposit is required later to officially reserve your event date.</p>
         <div class="dialog-actions">
           <button class="secondary-action" id="request-cancel" type="button">Cancel</button>
-          <button class="primary-action" type="submit">Submit quote request</button>
+          <button class="primary-action" type="submit">Let&rsquo;s Start Planning</button>
         </div>
       </form>
     </dialog>

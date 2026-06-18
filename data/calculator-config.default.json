@@ -32,7 +32,7 @@
         "id": "texas-smoke-show",
         "label": "Texas Smoke Show",
         "pricePerPerson": 34,
-        "includes": "Garden salad, 2 meats, 2 sides, beverage",
+        "includes": "garden salad, 2 meats, 2 sides, beverage",
         "requiredMeats": 2,
         "requiredSides": 2,
         "requiredDesserts": 0,
@@ -46,7 +46,7 @@
         "id": "texas-trinity",
         "label": "Texas Trinity",
         "pricePerPerson": 39,
-        "includes": "Brisket, ribs, sausage + 2 sides",
+        "includes": "brisket, ribs, sausage + 2 sides",
         "requiredMeats": 0,
         "requiredSides": 2,
         "requiredDesserts": 0,
@@ -64,7 +64,7 @@
         "id": "whole-dang-barn",
         "label": "The Whole Dang Barn",
         "pricePerPerson": 52,
-        "includes": "Garden salad, 4 meats, 4 sides, dessert, beverage station",
+        "includes": "garden salad, 4 meats, 4 sides, dessert, beverage station",
         "requiredMeats": 4,
         "requiredSides": 4,
         "requiredDesserts": 1,
@@ -78,7 +78,7 @@
     "venueTypes": [
       {
         "id": "offsite",
-        "label": "Full service Catering at the venue of your choice",
+        "label": "Full-Service Catering at the Venue of Your Choice",
         "description": "Recommended Food & Beverage minimum of $2000",
         "foodBeverageMinimum": 2000,
         "rentalFee": 0,
@@ -87,7 +87,7 @@
       {
         "id": "restaurant-buyout",
         "label": "Host your exclusive event at Black Board Bar-B-Q",
-        "description": "Food and beverage minimum of $1200 and three hour minimum rental starting at $1050.",
+        "description": "Food and beverage minimum of $1200 and three-hour minimum rental starting at $1050.",
         "foodBeverageMinimum": 1200,
         "rentalFee": 1050,
         "rentalLabel": "3-hour restaurant rental",
@@ -95,8 +95,8 @@
       },
       {
         "id": "large-party-reservation",
-        "label": "Large party reservation at Black Board Bar-B-Q",
-        "description": "For guests of 35 or less.",
+        "label": "Large Party Reservation at Black Board Bar-B-Q",
+        "description": "For groups of 35 guests or fewer, our Large Party Reservations offer a relaxed, family-style dining experience right here at Black Board Bar-B-Q.",
         "foodBeverageMinimum": 0,
         "rentalFee": 0,
         "note": "Large party reservations are calculated from the a la carte menu."
@@ -131,18 +131,18 @@
     "fulfillmentOptions": [
       {
         "id": "pickup",
-        "label": "Large pick-up",
+        "label": "Large Pick-Up",
         "description": ""
       },
       {
         "id": "dropoff",
-        "label": "Large drop-off",
+        "label": "Large Drop-Off",
         "description": "$500 food and beverage minimum. Production fee includes delivery within 30 miles."
       },
       {
         "id": "large-party-reservation",
-        "label": "Large party reservation at Black Board Bar-B-Q",
-        "description": "For guests of 35 or less.",
+        "label": "Large Party Reservation at Black Board Bar-B-Q",
+        "description": "For groups of 35 guests or fewer, our Large Party Reservations offer a relaxed, family-style dining experience right here at Black Board Bar-B-Q.",
         "menuVisible": false,
         "minimum": 0,
         "productionFeeRate": 0,
@@ -436,8 +436,9 @@
   },
   "quoteRequest": {
     "recipientEmail": "melissa@blackboardbarbq.com",
-    "senderEmail": "quotes@blackboardbarbq.com",
-    "subjectPrefix": "Catering quote request",
+    "copyRecipientEmail": "melissa.bbbbq@gmail.com",
+    "senderEmail": "melissa@blackboardbarbq.com",
+    "subjectPrefix": "Catering Quote Request",
     "deliveryMode": "smtp"
   },
   "units": {

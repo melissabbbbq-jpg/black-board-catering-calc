@@ -18,6 +18,7 @@ const guestSummaryCopyEl = document.querySelector("#guest-summary-copy");
 const invoiceItemsEl = document.querySelector("#invoice-items");
 const invoiceSummaryEl = document.querySelector("#invoice-summary");
 const requestActionEl = document.querySelector("#request-action");
+const pdfActionEl = document.querySelector("#pdf-action");
 const requestStatusEl = document.querySelector("#request-status");
 const depositLabelEl = document.querySelector(".deposit-box span");
 const requestDialogEl = document.querySelector("#request-dialog");
@@ -345,7 +346,7 @@ function renderFixedPackageSelections(selectedPackage) {
 
   const section = document.createElement("section");
   section.className = "package-choice-section";
-  appendText(section, "h3", "Included fixed selections");
+  appendText(section, "h3", "Included Fixed Selections");
 
   const list = document.createElement("ul");
   [...fixedMeats, ...fixedSides].forEach((item) => {
@@ -590,7 +591,7 @@ function renderInvoice(invoice) {
   appendInvoiceRow(invoiceSummaryEl, "Subtotal", summary.subtotal);
   appendInvoiceRow(invoiceSummaryEl, "Taxes", summary.taxes);
   appendInvoiceRow(invoiceSummaryEl, "Fees", summary.fees);
-  appendInvoiceRow(invoiceSummaryEl, "Deposit amount", summary.depositAmount);
+  appendInvoiceRow(invoiceSummaryEl, "Deposit Amount", summary.depositAmount);
   appendInvoiceRow(invoiceSummaryEl, "Estimated total", summary.estimatedTotal);
 }
 
@@ -625,7 +626,7 @@ function bodyFromItems(items) {
 function renderAlaCarteDetails(data) {
   const prep = data.prep;
   detailEyebrowEl.textContent = "Prep List";
-  detailTitleEl.textContent = "Order quantities";
+  detailTitleEl.textContent = "Order Quantities";
   detailGridEl.replaceChildren();
 
   detailGridEl.append(
@@ -669,7 +670,7 @@ function renderAlaCarteDetails(data) {
 
 function renderFullServiceDetails(data) {
   detailEyebrowEl.textContent = "Admin Prep";
-  detailTitleEl.textContent = "Buffet planning quantities";
+  detailTitleEl.textContent = "Buffet Planning Quantities";
   detailGridEl.replaceChildren();
 
   data.detailSections.forEach((section) => {
@@ -677,7 +678,7 @@ function renderFullServiceDetails(data) {
   });
 
   detailGridEl.append(
-    createDetailSection("Overage plan", [
+    createDetailSection("Overage Plan", [
       `Guest count: ${data.input.guestCount}`,
       `Planned count: ${data.prep.plannedGuests}`,
       `Overage: ${Math.round(data.prep.overageRate * 100)}%`
@@ -696,7 +697,7 @@ function renderFullServiceDetails(data) {
         body: `${formatQuantity(item.quarts)} quart${item.quarts === 1 ? "" : "s"} · ${formatQuantity(item.totalPounds)} lb · ${item.portion}`
       }))
     ),
-    createDetailSection("Package extras", bodyFromItems(data.prep.extras))
+    createDetailSection("Package Extras", bodyFromItems(data.prep.extras))
   );
 }
 
@@ -707,14 +708,14 @@ function renderResults(data) {
   resultsEl.hidden = false;
   emptyStateEl.hidden = true;
 
-  const modeLabel = data.mode === "full-service" ? "Full-Service Quote" : "Pickup / Delivery Quote";
+  const modeLabel = data.mode === "full-service" ? "Full-Service Offerings Quote" : "Pickup / Delivery Quote";
   resultModeLabelEl.textContent = isAdminView ? `Admin ${modeLabel}` : "Estimated Catering Quote";
   quoteTitleEl.textContent = `${data.input.guestCount} guests · ${formatDate(data.input.eventDate)}`;
   quoteTotalEl.textContent = formatMoney(data.quote.totalQuote);
   depositTotalEl.textContent = formatMoney(data.quote.deposit);
-  depositLabelEl.textContent = `${formatRate(data.quote.depositRate)} deposit to reserve`;
+  depositLabelEl.textContent = `${formatRate(data.quote.depositRate)} Deposit to Reserve`;
   guestSummaryCopyEl.textContent =
-    `This estimate includes the selected catering service, production fee, and sales tax. To reserve your date, request follow-up and we will contact you to confirm availability and collect the ${formatRate(data.quote.depositRate)} deposit.`;
+    `This estimate includes the selected catering service, production fee, and sales tax. Submitting your quote starts a conversation with our team and does not require payment. A ${formatRate(data.quote.depositRate)} deposit is required later to officially reserve your date.`;
   disclaimerEl.textContent = data.disclaimer;
 
   renderQuoteLines(data.quote.lines);
@@ -723,6 +724,7 @@ function renderResults(data) {
   adminDetailsEl.hidden = !isAdminView;
   guestSummaryEl.hidden = isAdminView;
   requestActionEl.hidden = isAdminView;
+  pdfActionEl.hidden = isAdminView;
 
   pricingNoticeEl.hidden = true;
   if (isAdminView) {
@@ -763,7 +765,7 @@ function syncMode() {
     fulfillmentFieldsetEl.hidden = isLargePartyReservation();
   }
   form.querySelector(".primary-action").textContent =
-    calculationMode === "full-service" ? "Calculate buffet quote" : "Calculate pickup / delivery quote";
+    calculationMode === "full-service" ? "Calculate Quote" : "Calculate Pickup / Delivery Quote";
   updateAlaCarteControls();
   syncRecommendedQuantities();
   updateQuantityPreview();
@@ -915,7 +917,7 @@ async function submitRequest(event) {
   const formData = new FormData(requestFormEl);
   const submitButton = requestFormEl.querySelector('button[type="submit"]');
   submitButton.disabled = true;
-  submitButton.textContent = "Submitting...";
+  submitButton.textContent = "Sending...";
 
   try {
     const response = await fetch("/api/quote-request", {
@@ -940,13 +942,53 @@ async function submitRequest(event) {
     }
 
     closeRequestDialog();
-    requestStatusEl.textContent = data.message || "Your quote has been submitted. We will be in touch soon!";
+    requestStatusEl.textContent =
+      data.message || "Thank you. Our team will be in touch soon to discuss your event.";
   } catch (error) {
     requestStatusEl.textContent =
       "We could not submit your quote online right now. Please call or email us and we will help right away.";
   } finally {
     submitButton.disabled = false;
-    submitButton.textContent = "Submit quote request";
+    submitButton.textContent = "Let's Start Planning";
+  }
+}
+
+async function downloadQuotePdf() {
+  if (!latestQuotePayload) return;
+
+  pdfActionEl.disabled = true;
+  pdfActionEl.textContent = "Preparing PDF...";
+
+  try {
+    const response = await fetch("/api/quote-pdf", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        quotePayload: latestQuotePayload
+      })
+    });
+
+    if (!response.ok) {
+      const data = await response.json();
+      throw new Error(data.error || "Unable to create quote PDF.");
+    }
+
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "black-board-bar-b-q-quote-estimate.pdf";
+    document.body.append(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+  } catch (error) {
+    requestStatusEl.textContent = "We could not prepare the PDF right now. Please try again in a moment.";
+  } finally {
+    pdfActionEl.disabled = false;
+    pdfActionEl.textContent = "Download PDF";
   }
 }
 
@@ -1010,6 +1052,7 @@ async function init() {
     updateQuantityPreview();
   });
   requestActionEl.addEventListener("click", openRequestDialog);
+  pdfActionEl.addEventListener("click", downloadQuotePdf);
   requestCancelEl.addEventListener("click", closeRequestDialog);
   requestFormEl.addEventListener("submit", submitRequest);
   if (isAdminView) {

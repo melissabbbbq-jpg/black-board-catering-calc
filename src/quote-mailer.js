@@ -53,14 +53,23 @@ function selectedItems(data) {
   });
 }
 
-function buildQuoteEmail({ config, quoteData, contact, notes }) {
-  const recipient = process.env.QUOTE_RECIPIENT_EMAIL || config.quoteRequest.recipientEmail;
-  const subjectPrefix = config.quoteRequest.subjectPrefix || "Catering quote request";
+function getQuoteRecipients({ config, contact }) {
+  return [
+    contact.email,
+    process.env.QUOTE_COPY_EMAIL || config.quoteRequest.copyRecipientEmail || config.quoteRequest.recipientEmail
+  ]
+    .map((email) => String(email || "").trim())
+    .filter(Boolean)
+    .filter((email, index, emails) => emails.indexOf(email) === index);
+}
+
+function buildQuoteEmail({ config, quoteData, contact, notes, recipient }) {
+  const subjectPrefix = config.quoteRequest.subjectPrefix || "Catering Quote Request";
   const subject = `${subjectPrefix} - ${quoteData.input.guestCount} guests on ${formatDate(quoteData.input.eventDate)}`;
   const serviceStyle =
     quoteData.mode === "full-service" ? quoteData.input.venueType.label : quoteData.input.fulfillment.label;
   const lines = [
-    "A catering quote was submitted from the website.",
+    "A catering estimate follow-up request was sent through the website.",
     "",
     `Guest name: ${contact.name || quoteData.input.guestName || "Not provided"}`,
     `Phone number: ${contact.phone || quoteData.input.guestPhone || "Not provided"}`,
@@ -70,10 +79,10 @@ function buildQuoteEmail({ config, quoteData, contact, notes }) {
     `Guest count: ${quoteData.input.guestCount}`,
     `Selected service style: ${serviceStyle}`,
     "",
-    "Selected menu items:",
+    "Selected Menu Items:",
     ...selectedItems(quoteData).map((line) => `- ${line}`),
     "",
-    "Draft invoice summary:",
+    "Draft Invoice Summary:",
     ...flattenInvoice(quoteData.quote.invoice),
     "",
     `Estimated total: ${formatMoney(quoteData.quote.totalQuote)}`,
@@ -87,6 +96,18 @@ function buildQuoteEmail({ config, quoteData, contact, notes }) {
     subject,
     text: lines.join("\n")
   };
+}
+
+function buildQuoteEmails({ config, quoteData, contact, notes }) {
+  return getQuoteRecipients({ config, contact }).map((recipient) =>
+    buildQuoteEmail({
+      config,
+      quoteData,
+      contact,
+      notes,
+      recipient
+    })
+  );
 }
 
 function captureSubmission(message) {
@@ -197,20 +218,29 @@ function getSmtpSettings(config) {
     startTls: process.env.SMTP_STARTTLS !== "false" && !secure,
     user: process.env.SMTP_USER || "",
     pass: process.env.SMTP_PASS || "",
-    from: process.env.SMTP_FROM || config.quoteRequest.senderEmail || config.quoteRequest.recipientEmail,
+    from:
+      config.quoteRequest.senderEmail ||
+      config.quoteRequest.recipientEmail ||
+      process.env.SMTP_FROM ||
+      "melissa@blackboardbarbq.com",
     helloName: process.env.SMTP_HELO || "blackboardbarbq.com"
   };
 }
 
 async function sendQuoteRequest({ config, quoteData, contact, notes }) {
-  const message = buildQuoteEmail({ config, quoteData, contact, notes });
+  const messages = buildQuoteEmails({ config, quoteData, contact, notes });
   const deliveryMode = process.env.EMAIL_DELIVERY_MODE || config.quoteRequest.deliveryMode || "smtp";
 
+  if (messages.length === 0) {
+    throw new Error("Please provide an email address for quote follow-up.");
+  }
+
   if (deliveryMode === "capture") {
-    captureSubmission(message);
+    messages.forEach(captureSubmission);
     return {
       delivered: true,
-      mode: "capture"
+      mode: "capture",
+      recipients: messages.map((message) => message.recipient)
     };
   }
 
@@ -219,15 +249,19 @@ async function sendQuoteRequest({ config, quoteData, contact, notes }) {
     throw new Error("Email delivery is not configured. Set SMTP_HOST and related SMTP environment variables.");
   }
 
-  await sendSmtp(message, smtpSettings);
+  for (const message of messages) {
+    await sendSmtp(message, smtpSettings);
+  }
   return {
     delivered: true,
-    mode: "smtp"
+    mode: "smtp",
+    recipients: messages.map((message) => message.recipient)
   };
 }
 
 module.exports = {
   buildQuoteEmail,
+  buildQuoteEmails,
   sendQuoteRequest,
   submissionsPath
 };

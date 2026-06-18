@@ -62,6 +62,7 @@ Confirm these are present from `render.yaml` or the Render environment page:
 - `NODE_VERSION=20`
 - `EMAIL_DELIVERY_MODE=smtp`
 - `QUOTE_RECIPIENT_EMAIL=melissa@blackboardbarbq.com`
+- `QUOTE_COPY_EMAIL=melissa.bbbbq@gmail.com`
 - `SMTP_PORT=587`
 - `SMTP_SECURE=false`
 
@@ -74,12 +75,13 @@ For local testing without sending email, use `EMAIL_DELIVERY_MODE=capture`. Capt
 After Render finishes deploying:
 
 1. Open `/api/health` and confirm it returns `status: "ok"`.
-2. Open `/` and calculate one full-service quote.
+2. Open `/` and calculate one Full-Service Offerings quote.
 3. Open `/admin` and confirm the database editor loads.
 4. In `/admin`, calculate a quote and confirm admin prep details are visible.
 5. Open `/api/config` and confirm calculator settings are returned.
-6. Submit a quote request from the guest flow.
-7. Confirm the quote request email arrives at `QUOTE_RECIPIENT_EMAIL`.
+6. Download the quote PDF from the guest flow and confirm it opens.
+7. Submit a planning request from the guest flow.
+8. Confirm the quote email arrives for the prospective client and the copy address in `QUOTE_COPY_EMAIL`.
 
 If quote email fails, check Render logs first, then verify SMTP environment variables.
 

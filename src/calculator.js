@@ -247,7 +247,7 @@ function calculateFullServiceQuote(payload = {}) {
   const venueType = CONFIG.fullService.venueTypes.find((item) => item.id === venueTypeId);
 
   if (!selectedPackage) {
-    throw new Error("Choose a full-service buffet package.");
+    throw new Error("Choose a Full-Service Offerings package.");
   }
 
   if (!venueType) {
@@ -271,24 +271,24 @@ function calculateFullServiceQuote(payload = {}) {
   });
   const lines = [
     textLine("Package", `${selectedPackage.label} (${selectedPackage.includes})`),
-    textLine("Buffet price", `$${selectedPackage.pricePerPerson.toFixed(2)} per guest`),
-    moneyLine("Package subtotal", packageSubtotal)
+    textLine("Buffet Price", `$${selectedPackage.pricePerPerson.toFixed(2)} per guest`),
+    moneyLine("Package Subtotal", packageSubtotal)
   ];
 
   if (math.minimumAdjustment > 0) {
-    lines.push(moneyLine("Food & beverage minimum adjustment", math.minimumAdjustment));
+    lines.push(moneyLine("Food & Beverage Minimum Adjustment", math.minimumAdjustment));
   }
 
   if (venueType.rentalFee > 0) {
-    lines.push(moneyLine(venueType.rentalLabel || "Venue rental", venueType.rentalFee));
+    lines.push(moneyLine(venueType.rentalLabel || "Venue Rental", venueType.rentalFee));
   }
 
   lines.push(
-    moneyLine("Pre-fee subtotal", math.preFeeSubtotal),
-    moneyLine(`${formatRate(CONFIG.fullService.productionFeeRate)} production fee`, math.productionFee),
-    moneyLine(`${formatRate(CONFIG.taxRate)} sales tax`, math.salesTax),
-    moneyLine(`${formatRate(CONFIG.depositRate)} deposit to reserve`, math.deposit),
-    moneyLine("Estimated balance after deposit", math.balanceDue)
+    moneyLine("Pre-Fee Subtotal", math.preFeeSubtotal),
+    moneyLine(`${formatRate(CONFIG.fullService.productionFeeRate)} Production Fee`, math.productionFee),
+    moneyLine(`${formatRate(CONFIG.taxRate)} Sales Tax`, math.salesTax),
+    moneyLine(`${formatRate(CONFIG.depositRate)} Deposit to Reserve`, math.deposit),
+    moneyLine("Estimated Balance After Deposit", math.balanceDue)
   );
 
   const quote = {
@@ -314,14 +314,14 @@ function calculateFullServiceQuote(payload = {}) {
 
   if (math.minimumAdjustment > 0) {
     invoiceItems.push({
-      label: "Minimum adjustment",
+      label: "Minimum Adjustment",
       total: math.minimumAdjustment
     });
   }
 
   if (venueType.rentalFee > 0) {
     invoiceItems.push({
-      label: venueType.rentalLabel || "Venue rental",
+      label: venueType.rentalLabel || "Venue Rental",
       total: venueType.rentalFee
     });
   }
@@ -367,7 +367,7 @@ function calculateFullServiceQuote(payload = {}) {
     ],
     prep,
     disclaimer:
-      "This full-service quote is an estimate. Your date is not reserved until the deposit is paid and the catering agreement is confirmed. Labor, venue requirements, final headcount, menu changes, tax rules, and availability may change the total."
+      "This Full-Service Offerings estimate is for planning purposes only. Your date is not reserved until the deposit is paid and the catering agreement is confirmed. Labor, venue requirements, final headcount, menu changes, tax rules, and availability may change the total."
   };
 }
 
@@ -639,23 +639,23 @@ function calculateAlaCarteQuote(payload = {}) {
   });
   const pricingIncomplete = allPrepItems.some((item) => item.unitPrice === 0);
   const lines = [
-    textLine("Order type", fulfillment.label),
-    moneyLine("A la carte subtotal", menuSubtotal)
+    textLine("Order Type", fulfillment.label),
+    moneyLine("A La Carte Subtotal", menuSubtotal)
   ];
 
   if (math.minimumAdjustment > 0) {
-    lines.push(moneyLine("Minimum adjustment", math.minimumAdjustment));
+    lines.push(moneyLine("Minimum Adjustment", math.minimumAdjustment));
   }
 
   if (productionFeeRate > 0 || math.productionFee > 0) {
-    const feeLabel = fulfillment.feeLabel || `${fulfillment.id === "pickup" ? "Pickup" : "Delivery"} add-on`;
+    const feeLabel = fulfillment.feeLabel || `${fulfillment.id === "pickup" ? "Pickup" : "Delivery"} Add-On`;
     lines.push(moneyLine(`${feeLabel} (${formatRate(productionFeeRate)})`, math.productionFee));
   }
 
   lines.push(
-    moneyLine(`${formatRate(CONFIG.taxRate)} sales tax`, math.salesTax),
-    moneyLine(`${formatRate(CONFIG.depositRate)} deposit to reserve`, math.deposit),
-    moneyLine("Estimated balance after deposit", math.balanceDue)
+    moneyLine(`${formatRate(CONFIG.taxRate)} Sales Tax`, math.salesTax),
+    moneyLine(`${formatRate(CONFIG.depositRate)} Deposit to Reserve`, math.deposit),
+    moneyLine("Estimated Balance After Deposit", math.balanceDue)
   );
   const quote = {
     menuSubtotal: roundCurrency(menuSubtotal),
@@ -681,7 +681,7 @@ function calculateAlaCarteQuote(payload = {}) {
 
   if (math.minimumAdjustment > 0) {
     invoiceItems.push({
-      label: "Minimum adjustment",
+      label: "Minimum Adjustment",
       total: math.minimumAdjustment
     });
   }
@@ -713,7 +713,7 @@ function calculateAlaCarteQuote(payload = {}) {
         items: [
           fulfillment.description,
           "Every order includes fixin's: house pickled onions, pickles, jalapenos, Martin's potato bread, and signature sauce.",
-          "Disposable plates, serving and dinnerware, plastic cups, and ice are available for purchase."
+          "Disposable plates, serving and dinnerware, plastic cups, and ice are available as add-ons."
         ]
       }
     ],

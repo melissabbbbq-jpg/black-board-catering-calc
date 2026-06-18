@@ -6,8 +6,10 @@ const {
   reloadCalculatorConfig,
   saveCalculatorConfig
 } = require("../src/calculator");
+const { buildQuoteEmails } = require("../src/quote-mailer");
+const { buildQuotePdf } = require("../src/quote-pdf");
 
-test("calculates a full-service buffet package quote", () => {
+test("calculates a Full-Service Offerings package quote", () => {
   const result = calculateQuote({
     calculatorType: "full-service",
     eventDate: "2026-07-04",
@@ -205,7 +207,7 @@ test("calculates large party reservations from a la carte items without pickup o
   });
 
   assert.equal(result.mode, "a-la-carte");
-  assert.equal(result.input.fulfillment.label, "Large party reservation at Black Board Bar-B-Q");
+  assert.equal(result.input.fulfillment.label, "Large Party Reservation at Black Board Bar-B-Q");
   assert.equal(result.quote.menuSubtotal, 140);
   assert.equal(result.quote.minimum, 0);
   assert.equal(result.quote.productionFee, 0);
@@ -417,6 +419,55 @@ test("builds a clean draft invoice without backend formulas", () => {
     "depositAmount",
     "estimatedTotal"
   ]);
+});
+
+test("builds quote emails for the guest and Melissa copy address", () => {
+  const quoteData = calculateQuote({
+    calculatorType: "a-la-carte",
+    eventDate: "2026-07-04",
+    guestCount: 20,
+    fulfillment: "large-party-reservation",
+    meats: ["pulled-pork"],
+    sides: ["charro-beans"],
+    desserts: [],
+    beverages: []
+  });
+  const messages = buildQuoteEmails({
+    config: CONFIG,
+    quoteData,
+    contact: {
+      name: "Taylor Guest",
+      email: "taylor@example.com",
+      phone: "555-0100"
+    },
+    notes: "Please call after 2 p.m."
+  });
+
+  assert.deepEqual(messages.map((message) => message.recipient), [
+    "taylor@example.com",
+    "melissa.bbbbq@gmail.com"
+  ]);
+  assert.equal(messages[0].text, messages[1].text);
+  assert.match(messages[0].text, /Taylor Guest/);
+  assert.match(messages[0].text, /Large Party Reservation at Black Board Bar-B-Q/);
+});
+
+test("builds a printable quote PDF", () => {
+  const quoteData = calculateQuote({
+    calculatorType: "full-service",
+    eventDate: "2026-07-04",
+    guestCount: 40,
+    packageId: "texas-two-step",
+    venueType: "offsite",
+    packageMeats: ["smoked-prime-brisket", "pulled-pork"],
+    packageSides: ["charro-beans", "mac-n-cheese"]
+  });
+  const pdf = buildQuotePdf(quoteData);
+
+  assert.equal(pdf.subarray(0, 8).toString("utf8"), "%PDF-1.4");
+  assert.match(pdf.toString("utf8"), /Black Board Bar-B-Q/);
+  assert.match(pdf.toString("utf8"), /Pricing Breakdown/);
+  assert.match(pdf.toString("utf8"), /Quote Disclaimer/);
 });
 
 test("uses admin-saved config values in calculator logic", () => {
