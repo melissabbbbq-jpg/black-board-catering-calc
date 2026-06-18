@@ -434,18 +434,24 @@ function dateUsesPickupNoMinimum(eventDate) {
   return CONFIG.aLaCarte.pickupNoMinimumDays.includes(day);
 }
 
-function getAlaCarteMinimum(eventDate, fulfillmentId) {
+function getAlaCarteMinimum(eventDate, fulfillment) {
+  const fulfillmentId = typeof fulfillment === "string" ? fulfillment : fulfillment?.id;
+  if (fulfillment && Number.isFinite(Number(fulfillment.minimum))) return Number(fulfillment.minimum);
   if (fulfillmentId === "dropoff") return CONFIG.aLaCarte.dropoffMinimum;
   if (fulfillmentId === "pickup") {
     return dateUsesPickupNoMinimum(eventDate) ? 0 : CONFIG.aLaCarte.pickupWeekdayMinimum;
   }
-  throw new Error("Choose pickup or drop-off.");
+  throw new Error("Choose a valid a la carte order type.");
 }
 
-function getAlaCarteProductionRate(fulfillmentId) {
+function getAlaCarteProductionRate(fulfillment) {
+  const fulfillmentId = typeof fulfillment === "string" ? fulfillment : fulfillment?.id;
+  if (fulfillment && Number.isFinite(Number(fulfillment.productionFeeRate))) {
+    return Number(fulfillment.productionFeeRate);
+  }
   if (fulfillmentId === "pickup") return CONFIG.aLaCarte.pickupProductionFeeRate;
   if (fulfillmentId === "dropoff") return CONFIG.aLaCarte.dropoffProductionFeeRate;
-  throw new Error("Choose pickup or drop-off.");
+  throw new Error("Choose a valid a la carte order type.");
 }
 
 function getDefaultUnitPrice(category, item, unitKey = CONFIG.aLaCarte.dessertDefaultContainerSize) {
@@ -628,8 +634,8 @@ function calculateAlaCarteQuote(payload = {}) {
   });
   const allPrepItems = flattenPrepItems(prep);
   const menuSubtotal = allPrepItems.reduce((total, item) => total + item.lineTotal, 0);
-  const minimum = getAlaCarteMinimum(input.eventDate, fulfillment.id);
-  const productionFeeRate = getAlaCarteProductionRate(fulfillment.id);
+  const minimum = getAlaCarteMinimum(input.eventDate, fulfillment);
+  const productionFeeRate = getAlaCarteProductionRate(fulfillment);
   const math = getProductionMath({
     subtotal: menuSubtotal,
     minimum,
@@ -645,11 +651,12 @@ function calculateAlaCarteQuote(payload = {}) {
     lines.push(moneyLine("Minimum adjustment", math.minimumAdjustment));
   }
 
+  if (productionFeeRate > 0 || math.productionFee > 0) {
+    const feeLabel = fulfillment.feeLabel || `${fulfillment.id === "pickup" ? "Pickup" : "Delivery"} add-on`;
+    lines.push(moneyLine(`${feeLabel} (${formatRate(productionFeeRate)})`, math.productionFee));
+  }
+
   lines.push(
-    moneyLine(
-      `${fulfillment.id === "pickup" ? "Pickup" : "Delivery"} add-on (${formatRate(productionFeeRate)})`,
-      math.productionFee
-    ),
     moneyLine(`${formatRate(CONFIG.taxRate)} sales tax`, math.salesTax),
     moneyLine(`${formatRate(CONFIG.depositRate)} deposit to reserve`, math.deposit),
     moneyLine("Estimated balance after deposit", math.balanceDue)

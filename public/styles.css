@@ -237,6 +237,10 @@ legend {
   grid-template-columns: 1fr;
 }
 
+#venue-types {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 .package-selections,
 .package-choice-section {
   display: grid;
@@ -667,6 +671,10 @@ li span {
   .form-panel,
   .results-panel {
     padding: 16px;
+  }
+
+  #venue-types {
+    grid-template-columns: 1fr;
   }
 
   .result-header {

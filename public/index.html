@@ -44,6 +44,49 @@
       <section class="workspace" aria-label="Catering calculator">
         <form class="panel form-panel" id="quote-form">
           <fieldset>
+            <legend>Contact information</legend>
+            <div class="field-grid">
+              <label class="field">
+                <span>Name</span>
+                <input id="guest-name" name="guestName" autocomplete="name" required />
+              </label>
+
+              <label class="field">
+                <span>Phone number</span>
+                <input id="guest-phone" name="guestPhone" autocomplete="tel" required />
+              </label>
+
+              <label class="field">
+                <span>Email address</span>
+                <input id="guest-email" name="guestEmail" type="email" autocomplete="email" required />
+              </label>
+
+              <label class="field">
+                <span>Nature of event</span>
+                <input id="event-type" name="eventType" placeholder="Wedding, corporate lunch, birthday..." required />
+              </label>
+
+              <label class="field">
+                <span>Event date</span>
+                <input id="event-date" name="eventDate" type="date" />
+              </label>
+
+              <label class="field">
+                <span>Guest count</span>
+                <input
+                  id="guest-count"
+                  name="guestCount"
+                  type="number"
+                  min="1"
+                  step="1"
+                  value="50"
+                  required
+                />
+              </label>
+            </div>
+          </fieldset>
+
+          <fieldset>
             <legend>Calculator</legend>
             <div class="mode-switch">
               <label class="mode-choice">
@@ -63,45 +106,10 @@
             </div>
           </fieldset>
 
-          <div class="field-grid">
-            <label class="field">
-              <span>Name</span>
-              <input id="guest-name" name="guestName" autocomplete="name" required />
-            </label>
-
-            <label class="field">
-              <span>Phone number</span>
-              <input id="guest-phone" name="guestPhone" autocomplete="tel" required />
-            </label>
-
-            <label class="field">
-              <span>Email address</span>
-              <input id="guest-email" name="guestEmail" type="email" autocomplete="email" required />
-            </label>
-
-            <label class="field">
-              <span>Nature of event</span>
-              <input id="event-type" name="eventType" placeholder="Wedding, corporate lunch, birthday..." required />
-            </label>
-
-            <label class="field">
-              <span>Event date</span>
-              <input id="event-date" name="eventDate" type="date" />
-            </label>
-
-            <label class="field">
-              <span>Guest count</span>
-              <input
-                id="guest-count"
-                name="guestCount"
-                type="number"
-                min="1"
-                step="1"
-                value="50"
-                required
-              />
-            </label>
-          </div>
+          <fieldset id="event-type-fieldset">
+            <legend>Event type</legend>
+            <div class="choice-grid" id="venue-types"></div>
+          </fieldset>
 
           <section class="calculator-panel" data-calculator-panel="full-service">
             <fieldset>
@@ -113,15 +121,10 @@
               <legend>Package selections</legend>
               <div class="package-selections" id="package-selections"></div>
             </fieldset>
-
-            <fieldset>
-              <legend>Event type</legend>
-              <div class="choice-grid" id="venue-types"></div>
-            </fieldset>
           </section>
 
           <section class="calculator-panel" data-calculator-panel="a-la-carte" hidden>
-            <fieldset>
+            <fieldset id="fulfillment-fieldset">
               <legend>Pickup or delivery</legend>
               <p class="choice-help fulfillment-help">
                 Best for parties of 20 to 50 guests. No minimum Friday through Sunday; $500 minimum Monday through

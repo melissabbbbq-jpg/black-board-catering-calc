@@ -17,7 +17,7 @@
       {
         "id": "texas-two-step",
         "label": "Texas Two-Step",
-        "pricePerPerson": 25,
+        "pricePerPerson": 27,
         "includes": "2 meats + 2 sides",
         "requiredMeats": 2,
         "requiredSides": 2,
@@ -31,7 +31,7 @@
       {
         "id": "texas-smoke-show",
         "label": "Texas Smoke Show",
-        "pricePerPerson": 30,
+        "pricePerPerson": 34,
         "includes": "Garden salad, 2 meats, 2 sides, beverage",
         "requiredMeats": 2,
         "requiredSides": 2,
@@ -45,7 +45,7 @@
       {
         "id": "texas-trinity",
         "label": "Texas Trinity",
-        "pricePerPerson": 35,
+        "pricePerPerson": 39,
         "includes": "Brisket, ribs, sausage + 2 sides",
         "requiredMeats": 0,
         "requiredSides": 2,
@@ -63,7 +63,7 @@
       {
         "id": "whole-dang-barn",
         "label": "The Whole Dang Barn",
-        "pricePerPerson": 47,
+        "pricePerPerson": 52,
         "includes": "Garden salad, 4 meats, 4 sides, dessert, beverage station",
         "requiredMeats": 4,
         "requiredSides": 4,
@@ -78,18 +78,26 @@
     "venueTypes": [
       {
         "id": "offsite",
-        "label": "Off-site full service",
+        "label": "Full service Catering at the venue of your choice",
         "foodBeverageMinimum": 2000,
         "rentalFee": 0,
         "note": "Labor is estimated after event details. Plan starts at 1 team member per 25 guests."
       },
       {
         "id": "restaurant-buyout",
-        "label": "At Black Board buy-out",
+        "label": "Host your exclusive event at Blackboard",
         "foodBeverageMinimum": 1200,
         "rentalFee": 1050,
         "rentalLabel": "3-hour restaurant rental",
         "note": "Labor is included with the restaurant rental. Additional hours are quoted separately."
+      },
+      {
+        "id": "large-party-reservation",
+        "label": "Large party reservation at Blackboard",
+        "description": "For guests of 35 or less.",
+        "foodBeverageMinimum": 0,
+        "rentalFee": 0,
+        "note": "Large party reservations are calculated from the a la carte menu."
       }
     ],
     "teamGuestsPerStaffMember": 25
@@ -129,6 +137,15 @@
         "id": "dropoff",
         "label": "Large drop-off",
         "description": "$500 food and beverage minimum. Production fee includes delivery within 30 miles."
+      },
+      {
+        "id": "large-party-reservation",
+        "label": "Large party reservation at Blackboard",
+        "description": "For guests of 35 or less.",
+        "menuVisible": false,
+        "minimum": 0,
+        "productionFeeRate": 0,
+        "feeLabel": "Reservation service add-on"
       }
     ],
     "meats": [

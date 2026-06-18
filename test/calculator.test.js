@@ -20,12 +20,12 @@ test("calculates a full-service buffet package quote", () => {
 
   assert.equal(result.mode, "full-service");
   assert.equal(result.selections.package.label, "Texas Smoke Show");
-  assert.equal(result.quote.packageSubtotal, 3000);
+  assert.equal(result.quote.packageSubtotal, 3400);
   assert.equal(result.quote.minimumAdjustment, 0);
-  assert.equal(result.quote.productionFee, 900);
-  assert.equal(result.quote.salesTax, 321.75);
-  assert.equal(result.quote.totalQuote, 4221.75);
-  assert.equal(result.quote.deposit, 1055.44);
+  assert.equal(result.quote.productionFee, 1020);
+  assert.equal(result.quote.salesTax, 364.65);
+  assert.equal(result.quote.totalQuote, 4784.65);
+  assert.equal(result.quote.deposit, 1196.16);
   assert.equal(result.prep.plannedGuests, 115);
   assert.equal(result.prep.meats.length, 2);
   assert.equal(result.prep.sides.length, 2);
@@ -44,8 +44,8 @@ test("applies full-service food and beverage minimums", () => {
     packageSides: ["charro-beans", "creamy-jalapeno-slaw"]
   });
 
-  assert.equal(result.quote.packageSubtotal, 1250);
-  assert.equal(result.quote.minimumAdjustment, 750);
+  assert.equal(result.quote.packageSubtotal, 1350);
+  assert.equal(result.quote.minimumAdjustment, 650);
   assert.equal(result.quote.preFeeSubtotal, 2000);
   assert.equal(result.quote.totalQuote, 2814.5);
   assert.equal(result.quote.deposit, 703.63);
@@ -164,6 +164,29 @@ test("calculates pickup and delivery a la carte quantities and quote from unit p
   assert.equal(result.prep.desserts[0].orderQuantity, 2);
   assert.equal(result.prep.desserts[0].container.id, "full-tray");
   assert.equal(result.prep.beverages[0].orderQuantity, 4);
+});
+
+test("calculates large party reservations from a la carte items without pickup or delivery add-on", () => {
+  const result = calculateQuote({
+    calculatorType: "a-la-carte",
+    eventDate: "2026-07-04",
+    guestCount: 20,
+    fulfillment: "large-party-reservation",
+    meats: ["pulled-pork"],
+    sides: ["charro-beans"],
+    desserts: [],
+    beverages: []
+  });
+
+  assert.equal(result.mode, "a-la-carte");
+  assert.equal(result.input.fulfillment.label, "Large party reservation at Blackboard");
+  assert.equal(result.quote.menuSubtotal, 140);
+  assert.equal(result.quote.minimum, 0);
+  assert.equal(result.quote.productionFee, 0);
+  assert.equal(result.quote.salesTax, 11.55);
+  assert.equal(result.quote.totalQuote, 151.55);
+  assert.equal(result.quote.deposit, 37.89);
+  assert.equal(result.quote.lines.some((line) => line.label.includes("add-on")), false);
 });
 
 test("uses backend prices for a la carte quotes", () => {

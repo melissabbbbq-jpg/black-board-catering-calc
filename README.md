@@ -65,10 +65,10 @@ For spreadsheet uploads or bulk menu updates, use one row per menu item with the
 ## Full-Service Rules
 
 - Buffet packages:
-  - Texas Two-Step: $25/person
-  - Texas Smoke Show: $30/person
-  - Texas Trinity: $35/person
-  - The Whole Dang Barn: $47/person
+  - Texas Two-Step: $27/person
+  - Texas Smoke Show: $34/person
+  - Texas Trinity: $39/person
+  - The Whole Dang Barn: $52/person
 - Package selections:
   - Texas Two-Step: exactly 2 meats and 2 sides.
   - Texas Smoke Show: exactly 2 meats and 2 sides.
@@ -76,6 +76,7 @@ For spreadsheet uploads or bulk menu updates, use one row per menu item with the
   - The Whole Dang Barn: exactly 4 meats, 4 sides, and 1 dessert.
 - Off-site full service has a $2,000 food and beverage minimum.
 - Restaurant buy-out has a $1,200 food and beverage minimum plus a $1,050 starting rental fee.
+- Large party reservations at Blackboard show the a la carte menu and calculate from selected bulk menu items.
 - Production fee is 30%.
 - Sales tax is 8.25%.
 - Deposit is 25% to reserve, collected after follow-up rather than through the app.

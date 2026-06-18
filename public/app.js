@@ -33,6 +33,9 @@ const detailGridEl = document.querySelector("#detail-grid");
 const quantityPreviewListEl = document.querySelector("#quantity-preview-list");
 const viewEyebrowEl = document.querySelector("#view-eyebrow");
 const packageSelectionsEl = document.querySelector("#package-selections");
+const eventTypeFieldsetEl = document.querySelector("#event-type-fieldset");
+const fulfillmentFieldsetEl = document.querySelector("#fulfillment-fieldset");
+const LARGE_PARTY_VENUE_TYPE = "large-party-reservation";
 
 let calculatorConfig;
 let latestQuoteData;
@@ -75,6 +78,18 @@ function pluralize(count, singular, plural = `${singular}s`) {
 
 function getActiveMode() {
   return form.calculatorType.value;
+}
+
+function getSelectedVenueTypeId() {
+  return form.venueType?.value || "";
+}
+
+function isLargePartyReservation() {
+  return getActiveMode() === "full-service" && getSelectedVenueTypeId() === LARGE_PARTY_VENUE_TYPE;
+}
+
+function getCalculationMode() {
+  return isLargePartyReservation() ? "a-la-carte" : getActiveMode();
 }
 
 function getGuestCount() {
@@ -399,10 +414,11 @@ function renderMenu(config) {
   config.fullService.venueTypes.forEach((item, index) => {
     const minimum = formatMoney(item.foodBeverageMinimum);
     const rental = item.rentalFee ? ` · ${formatMoney(item.rentalFee)} rental` : "";
-    renderChoice("#venue-types", item, "radio", "venueType", index === 0, `${minimum} minimum${rental}`);
+    const meta = item.description || `${minimum} minimum${rental}`;
+    renderChoice("#venue-types", item, "radio", "venueType", index === 0, meta);
   });
 
-  config.aLaCarte.fulfillmentOptions.forEach((item, index) => {
+  config.aLaCarte.fulfillmentOptions.filter((item) => item.menuVisible !== false).forEach((item, index) => {
     renderChoice("#fulfillment-options", item, "radio", "fulfillment", index === 1, item.description);
   });
 
@@ -500,7 +516,7 @@ function collectDessertSizes() {
 }
 
 function collectPayload() {
-  const calculatorType = getActiveMode();
+  const calculatorType = getCalculationMode();
   const payload = {
     calculatorType,
     guestName: form.guestName.value,
@@ -522,7 +538,7 @@ function collectPayload() {
 
   return {
     ...payload,
-    fulfillment: form.fulfillment.value,
+    fulfillment: isLargePartyReservation() ? LARGE_PARTY_VENUE_TYPE : form.fulfillment.value,
     meats: getCheckedValues("meats"),
     sides: getCheckedValues("sides"),
     desserts: getCheckedValues("desserts"),
@@ -735,13 +751,19 @@ function renderResults(data) {
 
 function syncMode() {
   const mode = getActiveMode();
+  const calculationMode = getCalculationMode();
   viewEyebrowEl.textContent = isAdminView ? "Black Board Bar-B-Q · Admin" : "Black Board Bar-B-Q";
   document.querySelectorAll("[data-calculator-panel]").forEach((panel) => {
-    panel.hidden = panel.dataset.calculatorPanel !== mode;
+    panel.hidden = panel.dataset.calculatorPanel !== calculationMode;
   });
+  if (eventTypeFieldsetEl) {
+    eventTypeFieldsetEl.hidden = mode !== "full-service";
+  }
+  if (fulfillmentFieldsetEl) {
+    fulfillmentFieldsetEl.hidden = isLargePartyReservation();
+  }
   form.querySelector(".primary-action").textContent =
-    mode === "full-service" ? "Calculate buffet quote" : "Calculate pickup / delivery quote";
-  renderPackageSelections();
+    calculationMode === "full-service" ? "Calculate buffet quote" : "Calculate pickup / delivery quote";
   updateAlaCarteControls();
   syncRecommendedQuantities();
   updateQuantityPreview();
@@ -764,7 +786,7 @@ function syncDessertPriceDefault(sizeSelect) {
 }
 
 function syncRecommendedQuantities() {
-  if (!calculatorConfig || getActiveMode() !== "a-la-carte") return;
+  if (!calculatorConfig || getCalculationMode() !== "a-la-carte") return;
 
   const guests = getGuestCount();
   form.querySelectorAll("[data-quantity-category]").forEach((quantity) => {
@@ -816,7 +838,7 @@ function validatePackageSelectionCount(selectedPackage, fieldName, requiredCount
 }
 
 function validateFullServiceSelections() {
-  if (getActiveMode() !== "full-service") return true;
+  if (getCalculationMode() !== "full-service") return true;
 
   const selectedPackage = getSelectedPackage();
   if (!selectedPackage) return true;
@@ -836,7 +858,7 @@ function addPreviewLine(title, body) {
 }
 
 function updateQuantityPreview() {
-  if (!calculatorConfig || getActiveMode() !== "a-la-carte") return;
+  if (!calculatorConfig || getCalculationMode() !== "a-la-carte") return;
 
   quantityPreviewListEl.replaceChildren();
   const guests = getGuestCount();
