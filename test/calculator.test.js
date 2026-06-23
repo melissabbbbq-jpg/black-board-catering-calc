@@ -109,11 +109,11 @@ test("uses fixed per-item meat portions for a la carte selections", () => {
         label: "Turkey Breast",
         portion: "3 oz per guest",
         orderQuantity: 10,
-        lineTotal: 320
+        lineTotal: 280
       }
     ]
   );
-  assert.equal(result.quote.menuSubtotal, 1236);
+  assert.equal(result.quote.menuSubtotal, 1196);
 });
 
 test("allows more than three a la carte meat selections", () => {
@@ -296,9 +296,9 @@ test("adds Excel a la carte items for meats sides and piece desserts", () => {
       },
       {
         label: "Pork Spare Ribs",
-        portion: "1 pc per guest",
-        orderQuantity: 4,
-        lineTotal: 108
+        portion: "3.2 oz per guest",
+        orderQuantity: 10,
+        lineTotal: 270
       },
       {
         label: "Whole Smoked Chicken",
@@ -340,7 +340,7 @@ test("adds Excel a la carte items for meats sides and piece desserts", () => {
       }
     ]
   );
-  assert.equal(result.quote.menuSubtotal, 1441);
+  assert.equal(result.quote.menuSubtotal, 1603);
 });
 
 test("uses quantity overrides without accepting frontend price edits", () => {

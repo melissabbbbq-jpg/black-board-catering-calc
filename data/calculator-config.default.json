@@ -187,10 +187,9 @@
         "label": "Pork Spare Ribs",
         "unit": "lb",
         "unitLabel": "lb cooked",
-        "piecesPerGuest": 1,
-        "piecesPerUnit": 16,
+        "ouncesPerGuest": 3.2,
         "rawYield": 0.6,
-        "yieldNote": "1 piece per guest. Sold by the cooked pound.",
+        "yieldNote": "3.2 oz cooked per guest. Sold by the cooked pound.",
         "active": true,
         "pricePerUnit": 27
       },
@@ -215,7 +214,7 @@
         "rawYield": 0.62,
         "yieldNote": "3 oz cooked per guest. Sold by the cooked pound.",
         "active": true,
-        "pricePerUnit": 32
+        "pricePerUnit": 28
       },
       {
         "id": "jalapeno-cheddar-sausage",
@@ -226,7 +225,7 @@
         "rawYield": 0.85,
         "yieldNote": "1 oz cooked per guest. Sold by the cooked pound.",
         "active": true,
-        "pricePerUnit": 21
+        "pricePerUnit": 20
       },
       {
         "id": "garlic-confit-sausage",
@@ -237,7 +236,7 @@
         "rawYield": 0.85,
         "yieldNote": "1 oz cooked per guest. Sold by the cooked pound.",
         "active": true,
-        "pricePerUnit": 20
+        "pricePerUnit": 21
       }
     ],
     "sides": [
